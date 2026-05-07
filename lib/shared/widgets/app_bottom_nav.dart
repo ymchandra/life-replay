@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:iconsax/iconsax.dart';
 
 class AppBottomNav extends StatelessWidget {
   final int currentIndex;
@@ -15,30 +16,31 @@ class AppBottomNav extends StatelessWidget {
     return NavigationBar(
       selectedIndex: currentIndex,
       onDestinationSelected: onTap,
+      animationDuration: const Duration(milliseconds: 400),
       destinations: const [
         NavigationDestination(
-          icon: Icon(Icons.timeline_outlined),
-          selectedIcon: Icon(Icons.timeline),
+          icon: Icon(Iconsax.clock),
+          selectedIcon: Icon(Iconsax.clock2),
           label: 'Timeline',
         ),
         NavigationDestination(
-          icon: Icon(Icons.today_outlined),
-          selectedIcon: Icon(Icons.today),
+          icon: Icon(Iconsax.calendar),
+          selectedIcon: Icon(Iconsax.calendar2),
           label: 'On This Day',
         ),
         NavigationDestination(
-          icon: Icon(Icons.auto_stories_outlined),
-          selectedIcon: Icon(Icons.auto_stories),
+          icon: Icon(Iconsax.category),
+          selectedIcon: Icon(Iconsax.category2),
           label: 'Phases',
         ),
         NavigationDestination(
-          icon: Icon(Icons.play_circle_outline),
-          selectedIcon: Icon(Icons.play_circle),
+          icon: Icon(Iconsax.film),
+          selectedIcon: Icon(Iconsax.film2),
           label: 'Replay',
         ),
         NavigationDestination(
-          icon: Icon(Icons.bar_chart_outlined),
-          selectedIcon: Icon(Icons.bar_chart),
+          icon: Icon(Iconsax.chart),
+          selectedIcon: Icon(Iconsax.chart2),
           label: 'Analytics',
         ),
       ],

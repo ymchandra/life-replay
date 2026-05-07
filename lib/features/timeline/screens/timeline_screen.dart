@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:iconsax/iconsax.dart';
 import 'package:life_replay/core/database/database_helper.dart';
 import 'package:life_replay/core/providers/database_provider.dart';
 import 'package:life_replay/core/providers/events_provider.dart';
@@ -44,7 +46,7 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen> {
         centerTitle: false,
         actions: [
           IconButton(
-            icon: const Icon(Icons.search_outlined),
+            icon: const Icon(Iconsax.search_normal),
             onPressed: () {},
           ),
         ],
@@ -59,7 +61,7 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen> {
               data: (events) {
                 if (events.isEmpty) {
                   return const EmptyState(
-                    icon: Icons.history_edu_outlined,
+                    icon: Iconsax.clock,
                     title: 'No memories yet',
                     subtitle: 'Tap + to capture your first memory',
                   );
@@ -117,9 +119,15 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
+        heroTag: 'timeline_add_event_fab',
         onPressed: () => context.push('/event/new'),
-        child: const Icon(Icons.add),
-      ),
+        child: const Icon(Iconsax.add),
+      ).animate().scale(
+            begin: const Offset(0, 0),
+            end: const Offset(1, 1),
+            duration: 350.ms,
+            curve: Curves.elasticOut,
+          ),
     );
   }
 }
@@ -135,10 +143,10 @@ class _ZoomSelector extends ConsumerWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: SegmentedButton<TimelineZoom>(
         segments: const [
-          ButtonSegment(value: TimelineZoom.day, label: Text('Day')),
-          ButtonSegment(value: TimelineZoom.week, label: Text('Week')),
-          ButtonSegment(value: TimelineZoom.month, label: Text('Month')),
-          ButtonSegment(value: TimelineZoom.year, label: Text('Year')),
+          ButtonSegment(value: TimelineZoom.day, label: Text('Day'), icon: Icon(Iconsax.sun_1, size: 14)),
+          ButtonSegment(value: TimelineZoom.week, label: Text('Week'), icon: Icon(Iconsax.calendar_1, size: 14)),
+          ButtonSegment(value: TimelineZoom.month, label: Text('Month'), icon: Icon(Iconsax.calendar_2, size: 14)),
+          ButtonSegment(value: TimelineZoom.year, label: Text('Year'), icon: Icon(Iconsax.calendar2, size: 14)),
         ],
         selected: {zoom},
         onSelectionChanged: (val) {

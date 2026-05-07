@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:iconsax/iconsax.dart';
 import 'package:intl/intl.dart';
 import 'package:life_replay/core/models/life_event.dart';
 import 'package:life_replay/core/models/life_phase.dart';
@@ -22,7 +23,7 @@ class PhasesScreen extends ConsumerWidget {
         centerTitle: false,
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh_outlined),
+            icon: const Icon(Iconsax.refresh),
             onPressed: () => ref.read(phasesProvider.notifier).loadPhases(),
           ),
         ],
@@ -33,7 +34,7 @@ class PhasesScreen extends ConsumerWidget {
         data: (phases) {
           if (phases.isEmpty) {
             return const EmptyState(
-              icon: Icons.auto_stories_outlined,
+              icon: Iconsax.book,
               title: 'No phases detected yet',
               subtitle:
                   'Add more memories and life phases will be automatically detected based on your activity patterns.',
@@ -133,7 +134,7 @@ class _PhaseCard extends ConsumerWidget {
                                 padding: const EdgeInsets.only(bottom: 4),
                                 child: Row(
                                   children: [
-                                    const Icon(Icons.circle, size: 6),
+                                    const Icon(Iconsax.record, size: 10, color: Colors.white38),
                                     const SizedBox(width: 8),
                                     Expanded(
                                       child: Text(

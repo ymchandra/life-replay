@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:iconsax/iconsax.dart';
 import 'package:intl/intl.dart';
 import 'package:life_replay/core/models/life_event.dart';
 import 'package:life_replay/core/providers/database_provider.dart';
@@ -107,7 +108,15 @@ class _MemoryReplayScreenState extends ConsumerState<MemoryReplayScreen> {
             GlassmorphismCard(
               child: ListTile(
                 contentPadding: EdgeInsets.zero,
-                leading: const Icon(Icons.date_range_outlined),
+                leading: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: cs.primary.withOpacity(0.12),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(Iconsax.calendar, size: 20, color: cs.primary),
+                ),
                 title: Text(
                   '${DateFormat('MMM d, yyyy').format(_startDate)} → ${DateFormat('MMM d, yyyy').format(_endDate)}',
                   style: Theme.of(context).textTheme.titleSmall,
@@ -116,7 +125,7 @@ class _MemoryReplayScreenState extends ConsumerState<MemoryReplayScreen> {
                   '${_endDate.difference(_startDate).inDays} days',
                   style: Theme.of(context).textTheme.labelSmall,
                 ),
-                trailing: const Icon(Icons.edit_outlined, size: 18),
+                trailing: const Icon(Iconsax.edit, size: 18),
                 onTap: _pickDateRange,
               ),
             ),
@@ -125,7 +134,7 @@ class _MemoryReplayScreenState extends ConsumerState<MemoryReplayScreen> {
               width: double.infinity,
               child: FilledButton.icon(
                 onPressed: _loadAndReplay,
-                icon: const Icon(Icons.play_arrow),
+                icon: const Icon(Iconsax.play),
                 label: const Text('Start Replay'),
                 style: FilledButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
@@ -134,7 +143,7 @@ class _MemoryReplayScreenState extends ConsumerState<MemoryReplayScreen> {
             ),
             const Spacer(),
             const EmptyState(
-              icon: Icons.movie_creation_outlined,
+              icon: Iconsax.film,
               title: 'Choose a period above',
               subtitle: 'Your memories will be replayed in chronological order',
             ),
@@ -174,7 +183,7 @@ class _ReplayView extends StatelessWidget {
               child: Row(
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.close, color: Colors.white70),
+                    icon: const Icon(Iconsax.close_circle, color: Colors.white70),
                     onPressed: onClose,
                   ),
                   Expanded(
@@ -182,6 +191,7 @@ class _ReplayView extends StatelessWidget {
                       value: events.isEmpty ? 0 : (currentPage + 1) / events.length,
                       backgroundColor: Colors.white12,
                       valueColor: AlwaysStoppedAnimation<Color>(cs.primary),
+                      borderRadius: BorderRadius.circular(4),
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -207,13 +217,14 @@ class _ReplayView extends StatelessWidget {
 
             // Navigation
             Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  IconButton(
-                    icon: const Icon(Icons.arrow_back_ios, color: Colors.white70),
-                    onPressed: currentPage > 0
+                  _NavButton(
+                    icon: Iconsax.arrow_left,
+                    enabled: currentPage > 0,
+                    onTap: currentPage > 0
                         ? () => pageController.previousPage(
                               duration: const Duration(milliseconds: 400),
                               curve: Curves.easeInOut,
@@ -224,9 +235,10 @@ class _ReplayView extends StatelessWidget {
                     DateFormat('MMMM d, yyyy').format(events[currentPage].timestamp),
                     style: const TextStyle(color: Colors.white60, fontSize: 13),
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.arrow_forward_ios, color: Colors.white70),
-                    onPressed: currentPage < events.length - 1
+                  _NavButton(
+                    icon: Iconsax.arrow_right,
+                    enabled: currentPage < events.length - 1,
+                    onTap: currentPage < events.length - 1
                         ? () => pageController.nextPage(
                               duration: const Duration(milliseconds: 400),
                               curve: Curves.easeInOut,
@@ -243,6 +255,39 @@ class _ReplayView extends StatelessWidget {
   }
 }
 
+class _NavButton extends StatelessWidget {
+  final IconData icon;
+  final bool enabled;
+  final VoidCallback? onTap;
+
+  const _NavButton({
+    required this.icon,
+    required this.enabled,
+    this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedOpacity(
+      duration: const Duration(milliseconds: 200),
+      opacity: enabled ? 1.0 : 0.3,
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          width: 48,
+          height: 48,
+          decoration: BoxDecoration(
+            color: Colors.white12,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: Colors.white24),
+          ),
+          child: Icon(icon, color: Colors.white, size: 22),
+        ),
+      ),
+    );
+  }
+}
+
 class _EventPage extends StatelessWidget {
   final LifeEvent event;
 
@@ -250,43 +295,43 @@ class _EventPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          MoodIndicator(mood: event.mood, size: 40),
+          MoodIndicator(mood: event.mood, size: 48)
+              .animate()
+              .scale(begin: const Offset(0.5, 0.5), end: const Offset(1, 1), duration: 400.ms, curve: Curves.elasticOut),
           const SizedBox(height: 24),
           Text(
             event.title,
             style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                   color: Colors.white,
                   fontWeight: FontWeight.w700,
+                  height: 1.2,
                 ),
             textAlign: TextAlign.center,
           )
               .animate()
               .fadeIn(duration: 500.ms)
-              .slideY(begin: 0.1, end: 0, duration: 400.ms),
+              .slideY(begin: 0.12, end: 0, duration: 450.ms, curve: Curves.easeOutCubic),
           if (event.content.isNotEmpty) ...[
             const SizedBox(height: 20),
             Text(
               event.content,
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                     color: Colors.white70,
-                    height: 1.6,
+                    height: 1.7,
                   ),
               textAlign: TextAlign.center,
-            )
-                .animate(delay: 150.ms)
-                .fadeIn(duration: 400.ms),
+            ).animate(delay: 180.ms).fadeIn(duration: 400.ms),
           ],
           const SizedBox(height: 32),
           Text(
             DateFormat('EEEE, MMMM d, yyyy  ·  h:mm a').format(event.timestamp),
-            style: const TextStyle(color: Colors.white38, fontSize: 12),
-          ).animate(delay: 300.ms).fadeIn(duration: 400.ms),
+            style: const TextStyle(color: Colors.white38, fontSize: 12, letterSpacing: 0.4),
+          ).animate(delay: 320.ms).fadeIn(duration: 400.ms),
         ],
       ),
     );

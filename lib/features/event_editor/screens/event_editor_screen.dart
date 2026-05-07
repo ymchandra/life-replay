@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:iconsax/iconsax.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:life_replay/core/models/life_event.dart';
@@ -19,6 +20,9 @@ class EventEditorScreen extends ConsumerStatefulWidget {
 }
 
 class _EventEditorScreenState extends ConsumerState<EventEditorScreen> {
+  static const _moodEmojis = ['😞', '😐', '🙂', '😊', '🤩'];
+  static const _moodLabels = ['Awful', 'Meh', 'Okay', 'Good', 'Amazing'];
+
   final _titleController = TextEditingController();
   final _contentController = TextEditingController();
   final _tagController = TextEditingController();
@@ -173,14 +177,19 @@ class _EventEditorScreenState extends ConsumerState<EventEditorScreen> {
         actions: [
           if (_isEditing)
             IconButton(
-              icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
+              icon: const Icon(Iconsax.trash, color: Colors.redAccent),
               onPressed: _delete,
             ),
-          TextButton(
+          TextButton.icon(
             onPressed: _isLoading ? null : _save,
-            child: _isLoading
-                ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                : const Text('Save'),
+            icon: _isLoading
+                ? const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Iconsax.tick_circle, size: 18),
+            label: const Text('Save'),
           ),
         ],
       ),
@@ -221,23 +230,42 @@ class _EventEditorScreenState extends ConsumerState<EventEditorScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: List.generate(5, (i) {
                 final val = i + 1;
-                final emojis = ['😞', '😐', '🙂', '😊', '🤩'];
+                final isSelected = _mood == val;
                 return GestureDetector(
                   onTap: () => setState(() => _mood = val),
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 200),
-                    width: 52,
-                    height: 52,
+                    curve: Curves.easeOutCubic,
+                    width: 56,
+                    height: 68,
                     decoration: BoxDecoration(
-                      color: _mood == val ? cs.primary.withOpacity(0.2) : cs.surfaceVariant,
-                      borderRadius: BorderRadius.circular(12),
+                      color: isSelected ? cs.primary.withOpacity(0.2) : cs.surfaceVariant,
+                      borderRadius: BorderRadius.circular(14),
                       border: Border.all(
-                        color: _mood == val ? cs.primary : cs.surfaceVariant,
+                        color: isSelected ? cs.primary : Colors.transparent,
                         width: 2,
                       ),
                     ),
-                    child: Center(
-                      child: Text(emojis[i], style: const TextStyle(fontSize: 24)),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        AnimatedDefaultTextStyle(
+                          duration: const Duration(milliseconds: 200),
+                          style: TextStyle(
+                            fontSize: isSelected ? 26 : 22,
+                          ),
+                          child: Text(_moodEmojis[i]),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          _moodLabels[i],
+                          style: TextStyle(
+                            fontSize: 9,
+                            color: isSelected ? cs.primary : cs.onSurfaceVariant,
+                            fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 );
@@ -248,7 +276,15 @@ class _EventEditorScreenState extends ConsumerState<EventEditorScreen> {
             // Date
             ListTile(
               contentPadding: EdgeInsets.zero,
-              leading: const Icon(Icons.calendar_today_outlined),
+              leading: Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: cs.primary.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(Iconsax.calendar, size: 20, color: cs.primary),
+              ),
               title: Text(DateFormat('EEEE, MMMM d, yyyy – h:mm a').format(_selectedDate)),
               subtitle: const Text('Tap to change'),
               onTap: _pickDate,
@@ -278,7 +314,7 @@ class _EventEditorScreenState extends ConsumerState<EventEditorScreen> {
                 const SizedBox(width: 8),
                 IconButton(
                   onPressed: () => _addTag(_tagController.text),
-                  icon: const Icon(Icons.add_circle_outline),
+                  icon: const Icon(Iconsax.add_circle),
                 ),
               ],
             ),
@@ -300,7 +336,7 @@ class _EventEditorScreenState extends ConsumerState<EventEditorScreen> {
             // Photo
             OutlinedButton.icon(
               onPressed: _pickPhoto,
-              icon: Icon(_photoPath != null ? Icons.check_circle_outline : Icons.photo_outlined),
+              icon: Icon(_photoPath != null ? Iconsax.tick_circle : Iconsax.gallery),
               label: Text(_photoPath != null ? 'Photo attached' : 'Add Photo'),
               style: OutlinedButton.styleFrom(
                 foregroundColor: _photoPath != null ? cs.secondary : cs.onSurface,

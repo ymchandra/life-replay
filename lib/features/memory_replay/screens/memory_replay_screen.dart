@@ -143,7 +143,7 @@ class _MemoryReplayScreenState extends ConsumerState<MemoryReplayScreen> {
             ),
             const Spacer(),
             const EmptyState(
-              icon: Icons.movie_creation_outlined,
+              icon: Iconsax.film,
               title: 'Choose a period above',
               subtitle: 'Your memories will be replayed in chronological order',
             ),

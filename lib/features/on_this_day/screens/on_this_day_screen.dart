@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:iconsax/iconsax.dart';
 import 'package:intl/intl.dart';
 import 'package:life_replay/core/models/life_event.dart';
 import 'package:life_replay/core/providers/database_provider.dart';
@@ -34,7 +35,7 @@ class OnThisDayScreen extends ConsumerWidget {
         data: (events) {
           if (events.isEmpty) {
             return const EmptyState(
-              icon: Icons.today_outlined,
+              icon: Iconsax.calendar,
               title: 'No memories on this day',
               subtitle: 'Add memories and they\'ll appear here on the same date next year.',
             );

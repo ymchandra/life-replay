@@ -61,7 +61,7 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen> {
               data: (events) {
                 if (events.isEmpty) {
                   return const EmptyState(
-                    icon: Icons.history_edu_outlined,
+                    icon: Iconsax.clock,
                     title: 'No memories yet',
                     subtitle: 'Tap + to capture your first memory',
                   );
@@ -146,7 +146,7 @@ class _ZoomSelector extends ConsumerWidget {
           ButtonSegment(value: TimelineZoom.day, label: Text('Day'), icon: Icon(Iconsax.sun_1, size: 14)),
           ButtonSegment(value: TimelineZoom.week, label: Text('Week'), icon: Icon(Iconsax.calendar_1, size: 14)),
           ButtonSegment(value: TimelineZoom.month, label: Text('Month'), icon: Icon(Iconsax.calendar_2, size: 14)),
-          ButtonSegment(value: TimelineZoom.year, label: Text('Year'), icon: Icon(Iconsax.calendar_tick, size: 14)),
+          ButtonSegment(value: TimelineZoom.year, label: Text('Year'), icon: Icon(Iconsax.calendar2, size: 14)),
         ],
         selected: {zoom},
         onSelectionChanged: (val) {

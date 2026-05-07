@@ -34,7 +34,7 @@ class PhasesScreen extends ConsumerWidget {
         data: (phases) {
           if (phases.isEmpty) {
             return const EmptyState(
-              icon: Icons.auto_stories_outlined,
+              icon: Iconsax.book,
               title: 'No phases detected yet',
               subtitle:
                   'Add more memories and life phases will be automatically detected based on your activity patterns.',
@@ -134,7 +134,7 @@ class _PhaseCard extends ConsumerWidget {
                                 padding: const EdgeInsets.only(bottom: 4),
                                 child: Row(
                                   children: [
-                                    const Icon(Iconsax.record_circle, size: 10, color: Colors.white38),
+                                    const Icon(Iconsax.record, size: 10, color: Colors.white38),
                                     const SizedBox(width: 8),
                                     Expanded(
                                       child: Text(

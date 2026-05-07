@@ -1,0 +1,294 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
+import 'package:life_replay/core/models/life_event.dart';
+import 'package:life_replay/core/providers/database_provider.dart';
+import 'package:life_replay/shared/widgets/empty_state.dart';
+import 'package:life_replay/shared/widgets/glassmorphism_card.dart';
+import 'package:life_replay/shared/widgets/mood_indicator.dart';
+
+final _replayEventsProvider = StateProvider<List<LifeEvent>>((ref) => []);
+final _replayPageProvider = StateProvider<int>((ref) => 0);
+final _isReplayingProvider = StateProvider<bool>((ref) => false);
+
+class MemoryReplayScreen extends ConsumerStatefulWidget {
+  const MemoryReplayScreen({super.key});
+
+  @override
+  ConsumerState<MemoryReplayScreen> createState() => _MemoryReplayScreenState();
+}
+
+class _MemoryReplayScreenState extends ConsumerState<MemoryReplayScreen> {
+  DateTime _startDate = DateTime.now().subtract(const Duration(days: 30));
+  DateTime _endDate = DateTime.now();
+  final _pageController = PageController();
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadAndReplay() async {
+    final db = ref.read(databaseProvider);
+    final events = await db.getEventsByDateRange(_startDate, _endDate);
+    if (events.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('No memories found in this period')),
+        );
+      }
+      return;
+    }
+    events.sort((a, b) => a.timestamp.compareTo(b.timestamp));
+    ref.read(_replayEventsProvider.notifier).state = events;
+    ref.read(_replayPageProvider.notifier).state = 0;
+    ref.read(_isReplayingProvider.notifier).state = true;
+  }
+
+  Future<void> _pickDateRange() async {
+    final picked = await showDateRangePicker(
+      context: context,
+      firstDate: DateTime(1970),
+      lastDate: DateTime.now(),
+      initialDateRange: DateTimeRange(start: _startDate, end: _endDate),
+    );
+    if (picked != null) {
+      setState(() {
+        _startDate = picked.start;
+        _endDate = picked.end;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isReplaying = ref.watch(_isReplayingProvider);
+    final replayEvents = ref.watch(_replayEventsProvider);
+    final currentPage = ref.watch(_replayPageProvider);
+
+    if (isReplaying && replayEvents.isNotEmpty) {
+      return _ReplayView(
+        events: replayEvents,
+        currentPage: currentPage,
+        pageController: _pageController,
+        onClose: () {
+          ref.read(_isReplayingProvider.notifier).state = false;
+          ref.read(_replayEventsProvider.notifier).state = [];
+          ref.read(_replayPageProvider.notifier).state = 0;
+        },
+        onPageChanged: (page) {
+          ref.read(_replayPageProvider.notifier).state = page;
+        },
+      );
+    }
+
+    final cs = Theme.of(context).colorScheme;
+    return Scaffold(
+      appBar: AppBar(title: const Text('Memory Replay'), centerTitle: false),
+      body: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Reconstruct a period of your life',
+              style: Theme.of(context).textTheme.headlineSmall,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Select a time range to replay your memories like a movie, one event at a time.',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: cs.onSurfaceVariant,
+                  ),
+            ),
+            const SizedBox(height: 32),
+            GlassmorphismCard(
+              child: ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: const Icon(Icons.date_range_outlined),
+                title: Text(
+                  '${DateFormat('MMM d, yyyy').format(_startDate)} → ${DateFormat('MMM d, yyyy').format(_endDate)}',
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
+                subtitle: Text(
+                  '${_endDate.difference(_startDate).inDays} days',
+                  style: Theme.of(context).textTheme.labelSmall,
+                ),
+                trailing: const Icon(Icons.edit_outlined, size: 18),
+                onTap: _pickDateRange,
+              ),
+            ),
+            const SizedBox(height: 32),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                onPressed: _loadAndReplay,
+                icon: const Icon(Icons.play_arrow),
+                label: const Text('Start Replay'),
+                style: FilledButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                ),
+              ),
+            ),
+            const Spacer(),
+            const EmptyState(
+              icon: Icons.movie_creation_outlined,
+              title: 'Choose a period above',
+              subtitle: 'Your memories will be replayed in chronological order',
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ReplayView extends StatelessWidget {
+  final List<LifeEvent> events;
+  final int currentPage;
+  final PageController pageController;
+  final VoidCallback onClose;
+  final ValueChanged<int> onPageChanged;
+
+  const _ReplayView({
+    required this.events,
+    required this.currentPage,
+    required this.pageController,
+    required this.onClose,
+    required this.onPageChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: SafeArea(
+        child: Column(
+          children: [
+            // Header
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Row(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.close, color: Colors.white70),
+                    onPressed: onClose,
+                  ),
+                  Expanded(
+                    child: LinearProgressIndicator(
+                      value: events.isEmpty ? 0 : (currentPage + 1) / events.length,
+                      backgroundColor: Colors.white12,
+                      valueColor: AlwaysStoppedAnimation<Color>(cs.primary),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    '${currentPage + 1} / ${events.length}',
+                    style: const TextStyle(color: Colors.white54, fontSize: 12),
+                  ),
+                ],
+              ),
+            ),
+
+            // Pages
+            Expanded(
+              child: PageView.builder(
+                controller: pageController,
+                onPageChanged: onPageChanged,
+                itemCount: events.length,
+                itemBuilder: (context, index) {
+                  return _EventPage(event: events[index]);
+                },
+              ),
+            ),
+
+            // Navigation
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.arrow_back_ios, color: Colors.white70),
+                    onPressed: currentPage > 0
+                        ? () => pageController.previousPage(
+                              duration: const Duration(milliseconds: 400),
+                              curve: Curves.easeInOut,
+                            )
+                        : null,
+                  ),
+                  Text(
+                    DateFormat('MMMM d, yyyy').format(events[currentPage].timestamp),
+                    style: const TextStyle(color: Colors.white60, fontSize: 13),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.arrow_forward_ios, color: Colors.white70),
+                    onPressed: currentPage < events.length - 1
+                        ? () => pageController.nextPage(
+                              duration: const Duration(milliseconds: 400),
+                              curve: Curves.easeInOut,
+                            )
+                        : null,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _EventPage extends StatelessWidget {
+  final LifeEvent event;
+
+  const _EventPage({required this.event});
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          MoodIndicator(mood: event.mood, size: 40),
+          const SizedBox(height: 24),
+          Text(
+            event.title,
+            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
+                ),
+            textAlign: TextAlign.center,
+          )
+              .animate()
+              .fadeIn(duration: 500.ms)
+              .slideY(begin: 0.1, end: 0, duration: 400.ms),
+          if (event.content.isNotEmpty) ...[
+            const SizedBox(height: 20),
+            Text(
+              event.content,
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    color: Colors.white70,
+                    height: 1.6,
+                  ),
+              textAlign: TextAlign.center,
+            )
+                .animate(delay: 150.ms)
+                .fadeIn(duration: 400.ms),
+          ],
+          const SizedBox(height: 32),
+          Text(
+            DateFormat('EEEE, MMMM d, yyyy  ·  h:mm a').format(event.timestamp),
+            style: const TextStyle(color: Colors.white38, fontSize: 12),
+          ).animate(delay: 300.ms).fadeIn(duration: 400.ms),
+        ],
+      ),
+    );
+  }
+}

@@ -20,6 +20,9 @@ class EventEditorScreen extends ConsumerStatefulWidget {
 }
 
 class _EventEditorScreenState extends ConsumerState<EventEditorScreen> {
+  static const _moodEmojis = ['😞', '😐', '🙂', '😊', '🤩'];
+  static const _moodLabels = ['Awful', 'Meh', 'Okay', 'Good', 'Amazing'];
+
   final _titleController = TextEditingController();
   final _contentController = TextEditingController();
   final _tagController = TextEditingController();
@@ -227,8 +230,6 @@ class _EventEditorScreenState extends ConsumerState<EventEditorScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: List.generate(5, (i) {
                 final val = i + 1;
-                const emojis = ['😞', '😐', '🙂', '😊', '🤩'];
-                const labels = ['Awful', 'Meh', 'Okay', 'Good', 'Amazing'];
                 final isSelected = _mood == val;
                 return GestureDetector(
                   onTap: () => setState(() => _mood = val),
@@ -253,11 +254,11 @@ class _EventEditorScreenState extends ConsumerState<EventEditorScreen> {
                           style: TextStyle(
                             fontSize: isSelected ? 26 : 22,
                           ),
-                          child: Text(emojis[i]),
+                          child: Text(_moodEmojis[i]),
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          labels[i],
+                          _moodLabels[i],
                           style: TextStyle(
                             fontSize: 9,
                             color: isSelected ? cs.primary : cs.onSurfaceVariant,

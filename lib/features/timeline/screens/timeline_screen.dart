@@ -119,7 +119,7 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        heroTag: 'add_event_fab',
+        heroTag: 'timeline_add_event_fab',
         onPressed: () => context.push('/event/new'),
         child: const Icon(Iconsax.add),
       ).animate().scale(

@@ -5,7 +5,7 @@ import 'package:iconsax/iconsax.dart';
 import 'package:intl/intl.dart';
 import 'package:life_replay/core/models/life_event.dart';
 import 'package:life_replay/core/providers/database_provider.dart';
-import 'package:life_replay/shared/widgets/empty_state.dart';
+import 'package:life_replay/shared/widgets/app_hero_image.dart';
 import 'package:life_replay/shared/widgets/glassmorphism_card.dart';
 import 'package:life_replay/shared/widgets/mood_indicator.dart';
 
@@ -93,6 +93,11 @@ class _MemoryReplayScreenState extends ConsumerState<MemoryReplayScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            const AppHeroImage(
+              assetPath: 'assets/images/hero_replay.png',
+              height: 200,
+            ),
+            const SizedBox(height: 24),
             Text(
               'Reconstruct a period of your life',
               style: Theme.of(context).textTheme.headlineSmall,
@@ -142,11 +147,14 @@ class _MemoryReplayScreenState extends ConsumerState<MemoryReplayScreen> {
               ),
             ),
             const Spacer(),
-            const EmptyState(
-              icon: Iconsax.film,
-              title: 'Choose a period above',
-              subtitle: 'Your memories will be replayed in chronological order',
+            Center(
+              child: Text(
+                'Your memories will be replayed\nin chronological order',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.white38, fontSize: 13),
+              ).animate(delay: 300.ms).fadeIn(duration: 400.ms),
             ),
+            const SizedBox(height: 16),
           ],
         ),
       ),

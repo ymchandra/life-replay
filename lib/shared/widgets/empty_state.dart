@@ -2,18 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
 class EmptyState extends StatelessWidget {
-  final IconData icon;
+  final IconData? icon;
+  final String? imagePath;
   final String title;
   final String subtitle;
   final Widget? action;
 
   const EmptyState({
     super.key,
-    required this.icon,
+    this.icon,
+    this.imagePath,
     required this.title,
     required this.subtitle,
     this.action,
-  });
+  }) : assert(icon != null || imagePath != null,
+            'Either icon or imagePath must be provided');
 
   @override
   Widget build(BuildContext context) {
@@ -24,15 +27,37 @@ class EmptyState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 64, color: cs.onSurfaceVariant.withOpacity(0.4))
-                .animate(onPlay: (controller) => controller.repeat(reverse: true))
-                .scaleXY(
-                  begin: 0.92,
-                  end: 1.0,
-                  duration: 1800.ms,
-                  curve: Curves.easeInOut,
+            if (imagePath != null)
+              ClipRRect(
+                borderRadius: BorderRadius.circular(20),
+                child: Image.asset(
+                  imagePath!,
+                  width: 280,
+                  height: 180,
+                  fit: BoxFit.cover,
                 ),
-            const SizedBox(height: 16),
+              )
+                  .animate(
+                      onPlay: (controller) =>
+                          controller.repeat(reverse: true))
+                  .scaleXY(
+                    begin: 0.97,
+                    end: 1.0,
+                    duration: 2200.ms,
+                    curve: Curves.easeInOut,
+                  )
+            else
+              Icon(icon, size: 80, color: cs.onSurfaceVariant.withOpacity(0.4))
+                  .animate(
+                      onPlay: (controller) =>
+                          controller.repeat(reverse: true))
+                  .scaleXY(
+                    begin: 0.92,
+                    end: 1.0,
+                    duration: 1800.ms,
+                    curve: Curves.easeInOut,
+                  ),
+            const SizedBox(height: 20),
             Text(
               title,
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
@@ -61,3 +86,4 @@ class EmptyState extends StatelessWidget {
     ).animate().fadeIn(duration: 400.ms);
   }
 }
+

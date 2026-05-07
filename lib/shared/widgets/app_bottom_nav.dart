@@ -34,8 +34,8 @@ class AppBottomNav extends StatelessWidget {
           label: 'Phases',
         ),
         NavigationDestination(
-          icon: Icon(Iconsax.film),
-          selectedIcon: Icon(Iconsax.film2),
+          icon: Icon(Icons.movie_outlined),
+          selectedIcon: Icon(Icons.movie),
           label: 'Replay',
         ),
         NavigationDestination(

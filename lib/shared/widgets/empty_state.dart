@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 
 class EmptyState extends StatelessWidget {
   final IconData icon;
@@ -23,7 +24,14 @@ class EmptyState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 64, color: cs.onSurfaceVariant.withOpacity(0.4)),
+            Icon(icon, size: 64, color: cs.onSurfaceVariant.withOpacity(0.4))
+                .animate(onPlay: (controller) => controller.repeat(reverse: true))
+                .scaleXY(
+                  begin: 0.92,
+                  end: 1.0,
+                  duration: 1800.ms,
+                  curve: Curves.easeInOut,
+                ),
             const SizedBox(height: 16),
             Text(
               title,
@@ -31,7 +39,7 @@ class EmptyState extends StatelessWidget {
                     color: cs.onSurface,
                   ),
               textAlign: TextAlign.center,
-            ),
+            ).animate(delay: 80.ms).fadeIn(duration: 350.ms).slideY(begin: 0.15, end: 0),
             const SizedBox(height: 8),
             Text(
               subtitle,
@@ -39,14 +47,17 @@ class EmptyState extends StatelessWidget {
                     color: cs.onSurfaceVariant,
                   ),
               textAlign: TextAlign.center,
-            ),
+            ).animate(delay: 160.ms).fadeIn(duration: 350.ms).slideY(begin: 0.15, end: 0),
             if (action != null) ...[
               const SizedBox(height: 24),
-              action!,
+              action!
+                  .animate(delay: 240.ms)
+                  .fadeIn(duration: 350.ms)
+                  .slideY(begin: 0.15, end: 0),
             ],
           ],
         ),
       ),
-    );
+    ).animate().fadeIn(duration: 400.ms);
   }
 }

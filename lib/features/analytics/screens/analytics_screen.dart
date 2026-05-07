@@ -1,5 +1,6 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:life_replay/core/providers/database_provider.dart';
@@ -36,21 +37,45 @@ class AnalyticsScreen extends ConsumerWidget {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          const _SectionTitle(title: 'Mood Trend (Last 30 Days)'),
+          const _SectionTitle(title: 'Mood Trend (Last 30 Days)')
+              .animate()
+              .fadeIn(duration: 300.ms)
+              .slideX(begin: -0.05, end: 0),
           const SizedBox(height: 8),
-          _MoodTrendChart(moodAsync: ref.watch(_moodTrendProvider)),
+          _MoodTrendChart(moodAsync: ref.watch(_moodTrendProvider))
+              .animate(delay: 60.ms)
+              .fadeIn(duration: 350.ms)
+              .slideY(begin: 0.05, end: 0),
           const SizedBox(height: 24),
-          const _SectionTitle(title: 'Activity Heatmap'),
+          const _SectionTitle(title: 'Activity Heatmap')
+              .animate(delay: 120.ms)
+              .fadeIn(duration: 300.ms)
+              .slideX(begin: -0.05, end: 0),
           const SizedBox(height: 8),
-          _ActivityHeatmap(heatmapAsync: ref.watch(_heatmapProvider)),
+          _ActivityHeatmap(heatmapAsync: ref.watch(_heatmapProvider))
+              .animate(delay: 180.ms)
+              .fadeIn(duration: 350.ms)
+              .slideY(begin: 0.05, end: 0),
           const SizedBox(height: 24),
-          const _SectionTitle(title: 'Top Tags'),
+          const _SectionTitle(title: 'Top Tags')
+              .animate(delay: 240.ms)
+              .fadeIn(duration: 300.ms)
+              .slideX(begin: -0.05, end: 0),
           const SizedBox(height: 8),
-          _TopTagsChart(tagsAsync: ref.watch(_topTagsProvider)),
+          _TopTagsChart(tagsAsync: ref.watch(_topTagsProvider))
+              .animate(delay: 300.ms)
+              .fadeIn(duration: 350.ms)
+              .slideY(begin: 0.05, end: 0),
           const SizedBox(height: 24),
-          const _SectionTitle(title: 'Time of Day'),
+          const _SectionTitle(title: 'Time of Day')
+              .animate(delay: 360.ms)
+              .fadeIn(duration: 300.ms)
+              .slideX(begin: -0.05, end: 0),
           const SizedBox(height: 8),
-          _TimeOfDayWidget(timeAsync: ref.watch(_timeOfDayProvider)),
+          _TimeOfDayWidget(timeAsync: ref.watch(_timeOfDayProvider))
+              .animate(delay: 420.ms)
+              .fadeIn(duration: 350.ms)
+              .slideY(begin: 0.05, end: 0),
           const SizedBox(height: 40),
         ],
       ),
@@ -65,7 +90,21 @@ class _SectionTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text(title, style: Theme.of(context).textTheme.titleMedium);
+    final cs = Theme.of(context).colorScheme;
+    return Row(
+      children: [
+        Container(
+          width: 3,
+          height: 18,
+          decoration: BoxDecoration(
+            color: cs.primary,
+            borderRadius: BorderRadius.circular(2),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Text(title, style: Theme.of(context).textTheme.titleMedium),
+      ],
+    );
   }
 }
 

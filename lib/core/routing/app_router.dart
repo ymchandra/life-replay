@@ -1,3 +1,4 @@
+import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -27,13 +28,35 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/event/new',
-        builder: (_, __) => const EventEditorScreen(),
+        pageBuilder: (_, state) => CustomTransitionPage<void>(
+          key: state.pageKey,
+          child: const EventEditorScreen(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return SharedAxisTransition(
+              animation: animation,
+              secondaryAnimation: secondaryAnimation,
+              transitionType: SharedAxisTransitionType.vertical,
+              child: child,
+            );
+          },
+        ),
       ),
       GoRoute(
         path: '/event/:id',
-        builder: (_, state) {
+        pageBuilder: (_, state) {
           final id = int.tryParse(state.pathParameters['id'] ?? '');
-          return EventEditorScreen(eventId: id);
+          return CustomTransitionPage<void>(
+            key: state.pageKey,
+            child: EventEditorScreen(eventId: id),
+            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              return SharedAxisTransition(
+                animation: animation,
+                secondaryAnimation: secondaryAnimation,
+                transitionType: SharedAxisTransitionType.vertical,
+                child: child,
+              );
+            },
+          );
         },
       ),
     ],
@@ -59,7 +82,20 @@ class AppShell extends StatelessWidget {
     final currentIndex = _locationToIndex(location);
 
     return Scaffold(
-      body: child,
+      body: PageTransitionSwitcher(
+        duration: const Duration(milliseconds: 300),
+        transitionBuilder: (child, primaryAnimation, secondaryAnimation) {
+          return FadeThroughTransition(
+            animation: primaryAnimation,
+            secondaryAnimation: secondaryAnimation,
+            child: child,
+          );
+        },
+        child: KeyedSubtree(
+          key: ValueKey(currentIndex),
+          child: child,
+        ),
+      ),
       bottomNavigationBar: AppBottomNav(
         currentIndex: currentIndex,
         onTap: (index) {

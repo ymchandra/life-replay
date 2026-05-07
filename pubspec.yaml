@@ -22,6 +22,7 @@ dependencies:
   flutter_animate: ^4.5.0
   shared_preferences: ^2.2.3
   uuid: ^4.4.0
+  iconsax: ^0.0.8
 
 dev_dependencies:
   flutter_test:

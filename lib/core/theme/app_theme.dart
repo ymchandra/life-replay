@@ -66,31 +66,36 @@ class AppTheme {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         margin: EdgeInsets.zero,
       ),
-      floatingActionButtonTheme: const FloatingActionButtonThemeData(
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
         backgroundColor: primary,
         foregroundColor: Colors.white,
-        elevation: 4,
+        elevation: 6,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
       navigationBarTheme: NavigationBarThemeData(
+        height: 68,
         backgroundColor: surface,
-        indicatorColor: primary.withOpacity(0.2),
+        surfaceTintColor: Colors.transparent,
+        shadowColor: Colors.black45,
+        elevation: 8,
+        indicatorColor: primary.withOpacity(0.18),
         iconTheme: MaterialStateProperty.resolveWith((states) {
           if (states.contains(MaterialState.selected)) {
-            return const IconThemeData(color: primary);
+            return const IconThemeData(color: primary, size: 22);
           }
-          return const IconThemeData(color: onSurfaceVariant);
+          return const IconThemeData(color: onSurfaceVariant, size: 22);
         }),
         labelTextStyle: MaterialStateProperty.resolveWith((states) {
           if (states.contains(MaterialState.selected)) {
             return GoogleFonts.inter(
               color: primary,
-              fontSize: 12,
+              fontSize: 11,
               fontWeight: FontWeight.w600,
             );
           }
           return GoogleFonts.inter(
             color: onSurfaceVariant,
-            fontSize: 12,
+            fontSize: 11,
           );
         }),
       ),

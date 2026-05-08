@@ -30,7 +30,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/event/new',
         pageBuilder: (_, state) => CustomTransitionPage<void>(
           key: state.pageKey,
-          child: const EventEditorScreen(),
+          child: EventEditorScreen(initialContent: state.extra as String?),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             return SharedAxisTransition(
               animation: animation,

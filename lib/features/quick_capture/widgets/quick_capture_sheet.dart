@@ -61,9 +61,10 @@ class _QuickCaptureSheetState extends ConsumerState<QuickCaptureSheet> {
   }
 
   void _openFullEditor() {
+    final text = _controller.text;
     final router = GoRouter.of(context);
     Navigator.of(context).pop();
-    router.push('/event/new');
+    router.push('/event/new', extra: text.isNotEmpty ? text : null);
   }
 
   @override

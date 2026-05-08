@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
   Life Replay icon foreground.
-  Design: three timeline dots connected by a line (life moments),
+  Design: three timeline dots connected by a horizontal bar (life moments),
   with a right-pointing play triangle below (replay).
-  All white on transparent so the amber background shows through.
-  Viewport 108×108 dp; safe zone is the inner 72×72 dp (18–90 each axis).
+  White on transparent — amber background drawable shows through.
+  Viewport 108×108 dp; Android safe zone is the inner 72×72 dp (x 18–90, y 18–90).
 -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
@@ -12,28 +12,31 @@
     android:viewportWidth="108"
     android:viewportHeight="108">
 
-    <!-- Horizontal timeline bar  (y=43, height=3, x 22→86) -->
+    <!-- Horizontal timeline bar (y centre=42, height=4, x 24→84) -->
     <path
         android:fillColor="#FFFFFF"
-        android:pathData="M22,41.5 L86,41.5 L86,44.5 L22,44.5 Z"/>
+        android:pathData="M24,40 L84,40 L84,44 L24,44 Z"/>
 
-    <!-- Left dot  (circle at 22,43  r=6) -->
+    <!-- Left dot — circle centred at (24,42) r=7 -->
     <path
         android:fillColor="#FFFFFF"
-        android:pathData="M22,37 A6,6,0,1,0,22,49 A6,6,0,1,0,22,37 Z"/>
+        android:pathData="M24,35 a7,7 0 1,0 0.001,0 Z"/>
 
-    <!-- Center dot  (circle at 54,43  r=6) -->
+    <!-- Centre dot — circle centred at (54,42) r=7 -->
     <path
         android:fillColor="#FFFFFF"
-        android:pathData="M54,37 A6,6,0,1,0,54,49 A6,6,0,1,0,54,37 Z"/>
+        android:pathData="M54,35 a7,7 0 1,0 0.001,0 Z"/>
 
-    <!-- Right dot  (circle at 86,43  r=6) -->
+    <!-- Right dot — circle centred at (84,42) r=7 -->
     <path
         android:fillColor="#FFFFFF"
-        android:pathData="M86,37 A6,6,0,1,0,86,49 A6,6,0,1,0,86,37 Z"/>
+        android:pathData="M84,35 a7,7 0 1,0 0.001,0 Z"/>
 
-    <!-- Play triangle pointing right  (centered at 54,68) -->
+    <!-- Play triangle — right-pointing, centre ≈ (54,68)
+         Vertices: left-top (38,56) · left-bottom (38,80) · right (72,68) -->
     <path
         android:fillColor="#FFFFFF"
-        android:pathData="M43,59 L43,77 L69,68 Z"/>
+        android:pathData="M38,56 L38,80 L72,68 Z"/>
+
 </vector>
+

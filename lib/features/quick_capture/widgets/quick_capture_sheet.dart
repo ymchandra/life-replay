@@ -10,6 +10,8 @@ import 'package:life_replay/core/theme/app_theme.dart';
 /// Type a note, tap the send button — done.
 /// For richer editing, tap "More options" to open the full editor.
 class QuickCaptureSheet extends ConsumerStatefulWidget {
+  static const int _defaultMood = 3;     // neutral on the 1–5 scale
+  static const int _titleMaxChars = 57;  // chars before truncation with "…"
   final VoidCallback? onSaved;
 
   const QuickCaptureSheet({super.key, this.onSaved});
@@ -33,8 +35,8 @@ class _QuickCaptureSheetState extends ConsumerState<QuickCaptureSheet> {
     if (trimmed.isEmpty) return 'Memory';
     // Use first line, or first 60 characters
     final firstLine = trimmed.split('\n').first.trim();
-    if (firstLine.length <= 60) return firstLine;
-    return '${firstLine.substring(0, 57)}…';
+    if (firstLine.length <= QuickCaptureSheet._titleMaxChars + 3) return firstLine;
+    return '${firstLine.substring(0, QuickCaptureSheet._titleMaxChars)}…';
   }
 
   Future<void> _save() async {
@@ -46,7 +48,7 @@ class _QuickCaptureSheetState extends ConsumerState<QuickCaptureSheet> {
       final event = LifeEvent(
         title: _deriveTitle(text),
         content: text,
-        mood: 3, // neutral default
+        mood: QuickCaptureSheet._defaultMood,
         timestamp: DateTime.now(),
       );
       await ref.read(eventsProvider.notifier).addEvent(event, []);

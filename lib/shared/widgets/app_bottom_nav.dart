@@ -16,12 +16,12 @@ class AppBottomNav extends StatelessWidget {
     return NavigationBar(
       selectedIndex: currentIndex,
       onDestinationSelected: onTap,
-      animationDuration: const Duration(milliseconds: 400),
+      animationDuration: const Duration(milliseconds: 300),
       destinations: const [
         NavigationDestination(
           icon: Icon(Iconsax.clock),
           selectedIcon: Icon(Iconsax.clock2),
-          label: 'Timeline',
+          label: 'Journey',
         ),
         NavigationDestination(
           icon: Icon(Iconsax.calendar),
@@ -29,9 +29,9 @@ class AppBottomNav extends StatelessWidget {
           label: 'On This Day',
         ),
         NavigationDestination(
-          icon: Icon(Iconsax.category),
-          selectedIcon: Icon(Iconsax.category2),
-          label: 'Phases',
+          icon: Icon(Iconsax.book),
+          selectedIcon: Icon(Iconsax.book),
+          label: 'Chapters',
         ),
         NavigationDestination(
           icon: Icon(Icons.movie_outlined),
@@ -41,7 +41,7 @@ class AppBottomNav extends StatelessWidget {
         NavigationDestination(
           icon: Icon(Iconsax.chart),
           selectedIcon: Icon(Iconsax.chart2),
-          label: 'Analytics',
+          label: 'Insights',
         ),
       ],
     );

@@ -181,8 +181,7 @@ class _YearSection extends StatelessWidget {
             ),
           )
               .animate(delay: Duration(milliseconds: animIndex * 80 + entry.key * 40))
-              .fadeIn(duration: 300.ms)
-              .slideY(begin: 0.05, end: 0, duration: 300.ms);
+              .fadeIn(duration: 300.ms);
         }),
         const SizedBox(height: 4),
       ],

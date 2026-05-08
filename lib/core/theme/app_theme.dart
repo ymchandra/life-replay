@@ -2,16 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
-  static const Color background = Color(0xFF0D1117);
-  static const Color surface = Color(0xFF161B22);
-  static const Color surfaceVariant = Color(0xFF21262D);
-  static const Color primary = Color(0xFF6366F1);
-  static const Color primaryVariant = Color(0xFF4F46E5);
-  static const Color secondary = Color(0xFFF59E0B);
-  static const Color onBackground = Color(0xFFE6EDF3);
-  static const Color onSurface = Color(0xFFCDD9E5);
-  static const Color onSurfaceVariant = Color(0xFF8B949E);
-  static const Color error = Color(0xFFF85149);
+  // Warm, atmospheric palette — dark aged-paper tones with amber accents
+  static const Color background = Color(0xFF12100E);
+  static const Color surface = Color(0xFF1E1A16);
+  static const Color surfaceVariant = Color(0xFF2A251F);
+  static const Color primary = Color(0xFFC8956B);       // warm amber / terracotta
+  static const Color primaryVariant = Color(0xFFB07B52);
+  static const Color secondary = Color(0xFF9E8572);     // muted warm brown
+  static const Color onBackground = Color(0xFFF0E6D3);  // warm cream
+  static const Color onSurface = Color(0xFFD4C4A8);     // warm parchment
+  static const Color onSurfaceVariant = Color(0xFF8C7B6B); // muted warm
+  static const Color error = Color(0xFFE07B6B);         // warm red
+  static const Color divider = Color(0xFF332D26);
 
   static ThemeData get darkTheme {
     return ThemeData(
@@ -30,33 +32,41 @@ class AppTheme {
         error: error,
       ),
       scaffoldBackgroundColor: background,
-      textTheme: GoogleFonts.interTextTheme(
-        const TextTheme(
-          displayLarge: TextStyle(color: onBackground),
-          displayMedium: TextStyle(color: onBackground),
-          displaySmall: TextStyle(color: onBackground),
-          headlineLarge: TextStyle(color: onBackground),
-          headlineMedium: TextStyle(color: onBackground),
-          headlineSmall: TextStyle(color: onBackground),
-          titleLarge: TextStyle(color: onBackground, fontWeight: FontWeight.w600),
-          titleMedium: TextStyle(color: onBackground, fontWeight: FontWeight.w500),
-          titleSmall: TextStyle(color: onSurface, fontWeight: FontWeight.w500),
-          bodyLarge: TextStyle(color: onSurface),
-          bodyMedium: TextStyle(color: onSurface),
-          bodySmall: TextStyle(color: onSurfaceVariant),
-          labelLarge: TextStyle(color: onSurface, fontWeight: FontWeight.w500),
-          labelMedium: TextStyle(color: onSurfaceVariant),
-          labelSmall: TextStyle(color: onSurfaceVariant),
-        ),
+      dividerColor: divider,
+      textTheme: TextTheme(
+        // Serif headings for warmth and narrative quality
+        displayLarge: GoogleFonts.playfairDisplay(color: onBackground),
+        displayMedium: GoogleFonts.playfairDisplay(color: onBackground),
+        displaySmall: GoogleFonts.playfairDisplay(color: onBackground),
+        headlineLarge: GoogleFonts.playfairDisplay(color: onBackground),
+        headlineMedium: GoogleFonts.playfairDisplay(
+            color: onBackground, fontWeight: FontWeight.w600),
+        headlineSmall: GoogleFonts.playfairDisplay(
+            color: onBackground, fontWeight: FontWeight.w600),
+        titleLarge: GoogleFonts.playfairDisplay(
+            color: onBackground, fontWeight: FontWeight.w600),
+        // Humanist sans for body — readable, warm
+        titleMedium: GoogleFonts.inter(
+            color: onBackground, fontWeight: FontWeight.w500),
+        titleSmall: GoogleFonts.inter(
+            color: onSurface, fontWeight: FontWeight.w500),
+        bodyLarge: GoogleFonts.inter(color: onSurface, height: 1.6),
+        bodyMedium: GoogleFonts.inter(color: onSurface, height: 1.5),
+        bodySmall: GoogleFonts.inter(color: onSurfaceVariant, height: 1.5),
+        labelLarge: GoogleFonts.inter(
+            color: onSurface, fontWeight: FontWeight.w500),
+        labelMedium: GoogleFonts.inter(color: onSurfaceVariant),
+        labelSmall:
+            GoogleFonts.inter(color: onSurfaceVariant, fontSize: 11),
       ),
       appBarTheme: AppBarTheme(
         backgroundColor: background,
         foregroundColor: onBackground,
         elevation: 0,
         scrolledUnderElevation: 0,
-        titleTextStyle: GoogleFonts.inter(
+        titleTextStyle: GoogleFonts.playfairDisplay(
           color: onBackground,
-          fontSize: 20,
+          fontSize: 22,
           fontWeight: FontWeight.w600,
         ),
       ),
@@ -68,17 +78,17 @@ class AppTheme {
       ),
       floatingActionButtonTheme: FloatingActionButtonThemeData(
         backgroundColor: primary,
-        foregroundColor: Colors.white,
-        elevation: 6,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        foregroundColor: background,
+        elevation: 4,
+        shape: const CircleBorder(),
       ),
       navigationBarTheme: NavigationBarThemeData(
-        height: 68,
+        height: 64,
         backgroundColor: surface,
         surfaceTintColor: Colors.transparent,
-        shadowColor: Colors.black45,
-        elevation: 8,
-        indicatorColor: primary.withOpacity(0.18),
+        shadowColor: Colors.black54,
+        elevation: 0,
+        indicatorColor: primary.withOpacity(0.15),
         iconTheme: MaterialStateProperty.resolveWith((states) {
           if (states.contains(MaterialState.selected)) {
             return const IconThemeData(color: primary, size: 22);
@@ -104,11 +114,11 @@ class AppTheme {
         fillColor: surfaceVariant,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: Color(0xFF30363D)),
+          borderSide: const BorderSide(color: divider),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: Color(0xFF30363D)),
+          borderSide: const BorderSide(color: divider),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
@@ -120,14 +130,17 @@ class AppTheme {
       segmentedButtonTheme: SegmentedButtonThemeData(
         style: ButtonStyle(
           backgroundColor: MaterialStateProperty.resolveWith((states) {
-            if (states.contains(MaterialState.selected)) return primary.withOpacity(0.2);
+            if (states.contains(MaterialState.selected)) {
+              return primary.withOpacity(0.18);
+            }
             return Colors.transparent;
           }),
           foregroundColor: MaterialStateProperty.resolveWith((states) {
             if (states.contains(MaterialState.selected)) return primary;
             return onSurfaceVariant;
           }),
-          side: MaterialStateProperty.all(const BorderSide(color: Color(0xFF30363D))),
+          side: MaterialStateProperty.all(
+              const BorderSide(color: divider)),
         ),
       ),
       chipTheme: ChipThemeData(
@@ -135,7 +148,7 @@ class AppTheme {
         labelStyle: const TextStyle(color: onSurface, fontSize: 12),
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        side: const BorderSide(color: Color(0xFF30363D)),
+        side: const BorderSide(color: divider),
       ),
     );
   }

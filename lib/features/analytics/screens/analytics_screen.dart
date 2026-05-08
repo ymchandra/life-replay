@@ -34,7 +34,7 @@ class AnalyticsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Analytics'), centerTitle: false),
+      appBar: AppBar(title: const Text('Insights'), centerTitle: false),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -45,43 +45,35 @@ class AnalyticsScreen extends ConsumerWidget {
           const SizedBox(height: 20),
           const _SectionTitle(title: 'Mood Trend (Last 30 Days)')
               .animate()
-              .fadeIn(duration: 300.ms)
-              .slideX(begin: -0.05, end: 0),
+              .fadeIn(duration: 300.ms),
           const SizedBox(height: 8),
           _MoodTrendChart(moodAsync: ref.watch(_moodTrendProvider))
               .animate(delay: 60.ms)
-              .fadeIn(duration: 350.ms)
-              .slideY(begin: 0.05, end: 0),
+              .fadeIn(duration: 350.ms),
           const SizedBox(height: 24),
           const _SectionTitle(title: 'Activity Heatmap')
               .animate(delay: 120.ms)
-              .fadeIn(duration: 300.ms)
-              .slideX(begin: -0.05, end: 0),
+              .fadeIn(duration: 300.ms),
           const SizedBox(height: 8),
           _ActivityHeatmap(heatmapAsync: ref.watch(_heatmapProvider))
               .animate(delay: 180.ms)
-              .fadeIn(duration: 350.ms)
-              .slideY(begin: 0.05, end: 0),
+              .fadeIn(duration: 350.ms),
           const SizedBox(height: 24),
           const _SectionTitle(title: 'Top Tags')
               .animate(delay: 240.ms)
-              .fadeIn(duration: 300.ms)
-              .slideX(begin: -0.05, end: 0),
+              .fadeIn(duration: 300.ms),
           const SizedBox(height: 8),
           _TopTagsChart(tagsAsync: ref.watch(_topTagsProvider))
               .animate(delay: 300.ms)
-              .fadeIn(duration: 350.ms)
-              .slideY(begin: 0.05, end: 0),
+              .fadeIn(duration: 350.ms),
           const SizedBox(height: 24),
           const _SectionTitle(title: 'Time of Day')
               .animate(delay: 360.ms)
-              .fadeIn(duration: 300.ms)
-              .slideX(begin: -0.05, end: 0),
+              .fadeIn(duration: 300.ms),
           const SizedBox(height: 8),
           _TimeOfDayWidget(timeAsync: ref.watch(_timeOfDayProvider))
               .animate(delay: 420.ms)
-              .fadeIn(duration: 350.ms)
-              .slideY(begin: 0.05, end: 0),
+              .fadeIn(duration: 350.ms),
           const SizedBox(height: 40),
         ],
       ),

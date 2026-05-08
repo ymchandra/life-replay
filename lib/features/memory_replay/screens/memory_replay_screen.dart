@@ -310,7 +310,7 @@ class _EventPage extends StatelessWidget {
         children: [
           MoodIndicator(mood: event.mood, size: 48)
               .animate()
-              .scale(begin: const Offset(0.5, 0.5), end: const Offset(1, 1), duration: 400.ms, curve: Curves.elasticOut),
+              .fadeIn(duration: 400.ms),
           const SizedBox(height: 24),
           Text(
             event.title,

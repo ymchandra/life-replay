@@ -25,6 +25,6 @@ class AppHeroImage extends StatelessWidget {
         width: double.infinity,
         fit: BoxFit.cover,
       ),
-    ).animate().fadeIn(duration: 500.ms).slideY(begin: 0.04, end: 0);
+    ).animate().fadeIn(duration: 500.ms);
   }
 }

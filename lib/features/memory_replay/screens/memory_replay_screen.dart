@@ -180,6 +180,7 @@ class _ReplayView extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.black,
       body: SafeArea(
+        bottom: false,
         child: Column(
           children: [
             // Header
@@ -221,36 +222,39 @@ class _ReplayView extends StatelessWidget {
             ),
 
             // Navigation
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  _NavButton(
-                    icon: Iconsax.arrow_left,
-                    enabled: currentPage > 0,
-                    onTap: currentPage > 0
-                        ? () => pageController.previousPage(
-                              duration: const Duration(milliseconds: 400),
-                              curve: Curves.easeInOut,
-                            )
-                        : null,
-                  ),
-                  Text(
-                    DateFormat('MMMM d, yyyy').format(events[currentPage].timestamp),
-                    style: const TextStyle(color: Colors.white60, fontSize: 13),
-                  ),
-                  _NavButton(
-                    icon: Iconsax.arrow_right,
-                    enabled: currentPage < events.length - 1,
-                    onTap: currentPage < events.length - 1
-                        ? () => pageController.nextPage(
-                              duration: const Duration(milliseconds: 400),
-                              curve: Curves.easeInOut,
-                            )
-                        : null,
-                  ),
-                ],
+            SafeArea(
+              top: false,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    _NavButton(
+                      icon: Iconsax.arrow_left,
+                      enabled: currentPage > 0,
+                      onTap: currentPage > 0
+                          ? () => pageController.previousPage(
+                                duration: const Duration(milliseconds: 400),
+                                curve: Curves.easeInOut,
+                              )
+                          : null,
+                    ),
+                    Text(
+                      DateFormat('MMMM d, yyyy').format(events[currentPage].timestamp),
+                      style: const TextStyle(color: Colors.white60, fontSize: 13),
+                    ),
+                    _NavButton(
+                      icon: Iconsax.arrow_right,
+                      enabled: currentPage < events.length - 1,
+                      onTap: currentPage < events.length - 1
+                          ? () => pageController.nextPage(
+                                duration: const Duration(milliseconds: 400),
+                                curve: Curves.easeInOut,
+                              )
+                          : null,
+                    ),
+                  ],
+                ),
               ),
             ),
           ],

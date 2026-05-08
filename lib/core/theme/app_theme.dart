@@ -26,6 +26,8 @@ class AppTheme {
         primary: primary,
         primaryContainer: primaryVariant,
         secondary: secondary,
+        secondaryContainer: Color(0xFF3D2A1A),   // dark warm amber — NavigationBar indicator
+        onSecondaryContainer: primary,            // amber icon/label inside indicator
         onBackground: onBackground,
         onSurface: onSurface,
         onSurfaceVariant: onSurfaceVariant,
@@ -88,7 +90,7 @@ class AppTheme {
         surfaceTintColor: Colors.transparent,
         shadowColor: Colors.black54,
         elevation: 0,
-        indicatorColor: primary.withOpacity(0.15),
+        indicatorColor: primary.withOpacity(0.25),
         iconTheme: MaterialStateProperty.resolveWith((states) {
           if (states.contains(MaterialState.selected)) {
             return const IconThemeData(color: primary, size: 22);

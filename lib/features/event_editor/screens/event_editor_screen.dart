@@ -12,8 +12,9 @@ import 'package:uuid/uuid.dart';
 
 class EventEditorScreen extends ConsumerStatefulWidget {
   final int? eventId;
+  final String? initialContent;
 
-  const EventEditorScreen({super.key, this.eventId});
+  const EventEditorScreen({super.key, this.eventId, this.initialContent});
 
   @override
   ConsumerState<EventEditorScreen> createState() => _EventEditorScreenState();
@@ -40,6 +41,12 @@ class _EventEditorScreenState extends ConsumerState<EventEditorScreen> {
     if (widget.eventId != null) {
       _isEditing = true;
       _loadEvent();
+    } else if (widget.initialContent != null && widget.initialContent!.isNotEmpty) {
+      final text = widget.initialContent!;
+      _contentController.text = text;
+      // Derive title from the first line (up to 57 characters)
+      final firstLine = text.trim().split('\n').first.trim();
+      _titleController.text = firstLine.length > 57 ? '${firstLine.substring(0, 57)}…' : firstLine;
     }
   }
 

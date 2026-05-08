@@ -10,8 +10,9 @@ import 'package:life_replay/core/theme/app_theme.dart';
 /// Type a note, tap the send button — done.
 /// For richer editing, tap "More options" to open the full editor.
 class QuickCaptureSheet extends ConsumerStatefulWidget {
-  static const int _defaultMood = 3;     // neutral on the 1–5 scale
-  static const int _titleMaxChars = 57;  // chars before truncation with "…"
+  static const int _defaultMood = 3;      // neutral on the 1–5 scale
+  static const int _titleMaxChars = 57;   // chars before truncation with "…"
+  static const int _ellipsisCharCount = 1; // the "…" character itself
   final VoidCallback? onSaved;
 
   const QuickCaptureSheet({super.key, this.onSaved});
@@ -35,7 +36,7 @@ class _QuickCaptureSheetState extends ConsumerState<QuickCaptureSheet> {
     if (trimmed.isEmpty) return 'Memory';
     // Use first line, or first 60 characters
     final firstLine = trimmed.split('\n').first.trim();
-    if (firstLine.length <= QuickCaptureSheet._titleMaxChars + 3) return firstLine;
+    if (firstLine.length <= QuickCaptureSheet._titleMaxChars + QuickCaptureSheet._ellipsisCharCount) return firstLine;
     return '${firstLine.substring(0, QuickCaptureSheet._titleMaxChars)}…';
   }
 
@@ -144,7 +145,7 @@ class _QuickCaptureSheetState extends ConsumerState<QuickCaptureSheet> {
                     onPressed: _isSaving ? null : _save,
                     style: FilledButton.styleFrom(
                       backgroundColor: cs.primary,
-                      foregroundColor: AppTheme.background,
+                      foregroundColor: Colors.white,
                       minimumSize: const Size(56, 40),
                       padding: const EdgeInsets.symmetric(horizontal: 20),
                       shape: RoundedRectangleBorder(

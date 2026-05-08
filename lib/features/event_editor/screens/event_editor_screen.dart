@@ -23,6 +23,8 @@ class EventEditorScreen extends ConsumerStatefulWidget {
 class _EventEditorScreenState extends ConsumerState<EventEditorScreen> {
   static const _moodEmojis = ['😞', '😐', '🙂', '😊', '🤩'];
   static const _moodLabels = ['Awful', 'Meh', 'Okay', 'Good', 'Amazing'];
+  // Maximum characters for an auto-derived title (matches QuickCaptureSheet._titleMaxChars)
+  static const _maxTitleLength = 57;
 
   final _titleController = TextEditingController();
   final _contentController = TextEditingController();
@@ -46,7 +48,7 @@ class _EventEditorScreenState extends ConsumerState<EventEditorScreen> {
       _contentController.text = text;
       // Derive title from the first line (up to 57 characters)
       final firstLine = text.trim().split('\n').first.trim();
-      _titleController.text = firstLine.length > 57 ? '${firstLine.substring(0, 57)}…' : firstLine;
+      _titleController.text = firstLine.length > _maxTitleLength ? '${firstLine.substring(0, _maxTitleLength)}…' : firstLine;
     }
   }
 

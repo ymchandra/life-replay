@@ -5,9 +5,9 @@ import 'package:iconsax/iconsax.dart';
 import 'package:intl/intl.dart';
 import 'package:life_replay/core/models/life_event.dart';
 import 'package:life_replay/core/providers/database_provider.dart';
-import 'package:life_replay/shared/widgets/app_hero_image.dart';
 import 'package:life_replay/shared/widgets/glassmorphism_card.dart';
 import 'package:life_replay/shared/widgets/mood_indicator.dart';
+import 'package:life_replay/shared/widgets/warm_hero_art.dart';
 
 final _replayEventsProvider = StateProvider<List<LifeEvent>>((ref) => []);
 final _replayPageProvider = StateProvider<int>((ref) => 0);
@@ -93,10 +93,7 @@ class _MemoryReplayScreenState extends ConsumerState<MemoryReplayScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const AppHeroImage(
-              assetPath: 'assets/images/hero_replay.png',
-              height: 200,
-            ),
+            const WarmHeroArt(variant: HeroArtVariant.replay, height: 200),
             const SizedBox(height: 24),
             Text(
               'Reconstruct a period of your life',
@@ -310,7 +307,7 @@ class _EventPage extends StatelessWidget {
         children: [
           MoodIndicator(mood: event.mood, size: 48)
               .animate()
-              .scale(begin: const Offset(0.5, 0.5), end: const Offset(1, 1), duration: 400.ms, curve: Curves.elasticOut),
+              .fadeIn(duration: 400.ms),
           const SizedBox(height: 24),
           Text(
             event.title,

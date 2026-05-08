@@ -82,14 +82,6 @@ class EventCard extends StatelessWidget {
           ),
         ),
       ),
-    )
-        .animate(delay: Duration(milliseconds: animationIndex * 40))
-        .fadeIn(duration: 280.ms)
-        .slideX(
-          begin: 0.06,
-          end: 0,
-          duration: 320.ms,
-          curve: Curves.easeOutCubic,
-        );
+    ).animate(delay: Duration(milliseconds: animationIndex * 30)).fadeIn(duration: 300.ms);
   }
 }

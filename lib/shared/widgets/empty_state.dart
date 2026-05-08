@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:life_replay/core/theme/app_theme.dart';
 
 class EmptyState extends StatelessWidget {
   final IconData? icon;
@@ -37,26 +38,20 @@ class EmptyState extends StatelessWidget {
                   fit: BoxFit.cover,
                 ),
               )
-                  .animate(
-                      onPlay: (controller) =>
-                          controller.repeat(reverse: true))
-                  .scaleXY(
-                    begin: 0.97,
-                    end: 1.0,
-                    duration: 2200.ms,
-                    curve: Curves.easeInOut,
-                  )
             else
-              Icon(icon, size: 80, color: cs.onSurfaceVariant.withOpacity(0.4))
-                  .animate(
-                      onPlay: (controller) =>
-                          controller.repeat(reverse: true))
-                  .scaleXY(
-                    begin: 0.92,
-                    end: 1.0,
-                    duration: 1800.ms,
-                    curve: Curves.easeInOut,
+              Container(
+                width: 96,
+                height: 96,
+                decoration: BoxDecoration(
+                  color: AppTheme.primary.withOpacity(0.08),
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: AppTheme.primary.withOpacity(0.2),
+                    width: 1,
                   ),
+                ),
+                child: Icon(icon, size: 44, color: cs.onSurfaceVariant.withOpacity(0.5)),
+              ),
             const SizedBox(height: 20),
             Text(
               title,
@@ -64,7 +59,7 @@ class EmptyState extends StatelessWidget {
                     color: cs.onSurface,
                   ),
               textAlign: TextAlign.center,
-            ).animate(delay: 80.ms).fadeIn(duration: 350.ms).slideY(begin: 0.15, end: 0),
+            ).animate(delay: 80.ms).fadeIn(duration: 350.ms),
             const SizedBox(height: 8),
             Text(
               subtitle,
@@ -72,13 +67,10 @@ class EmptyState extends StatelessWidget {
                     color: cs.onSurfaceVariant,
                   ),
               textAlign: TextAlign.center,
-            ).animate(delay: 160.ms).fadeIn(duration: 350.ms).slideY(begin: 0.15, end: 0),
+            ).animate(delay: 160.ms).fadeIn(duration: 350.ms),
             if (action != null) ...[
               const SizedBox(height: 24),
-              action!
-                  .animate(delay: 240.ms)
-                  .fadeIn(duration: 350.ms)
-                  .slideY(begin: 0.15, end: 0),
+              action!.animate(delay: 240.ms).fadeIn(duration: 350.ms),
             ],
           ],
         ),
@@ -86,4 +78,3 @@ class EmptyState extends StatelessWidget {
     ).animate().fadeIn(duration: 400.ms);
   }
 }
-

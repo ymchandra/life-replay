@@ -5,8 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:life_replay/core/providers/database_provider.dart';
 import 'package:life_replay/core/theme/app_theme.dart';
-import 'package:life_replay/shared/widgets/app_hero_image.dart';
 import 'package:life_replay/shared/widgets/glassmorphism_card.dart';
+import 'package:life_replay/shared/widgets/warm_hero_art.dart';
 
 final _moodTrendProvider = FutureProvider.autoDispose<List<Map<String, dynamic>>>((ref) async {
   final db = ref.watch(databaseProvider);
@@ -34,54 +34,44 @@ class AnalyticsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Analytics'), centerTitle: false),
+      appBar: AppBar(title: const Text('Insights'), centerTitle: false),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          const AppHeroImage(
-            assetPath: 'assets/images/hero_analytics.png',
-            height: 180,
-          ).animate().fadeIn(duration: 400.ms),
+          const WarmHeroArt(variant: HeroArtVariant.insights, height: 180)
+              .animate().fadeIn(duration: 400.ms),
           const SizedBox(height: 20),
           const _SectionTitle(title: 'Mood Trend (Last 30 Days)')
               .animate()
-              .fadeIn(duration: 300.ms)
-              .slideX(begin: -0.05, end: 0),
+              .fadeIn(duration: 300.ms),
           const SizedBox(height: 8),
           _MoodTrendChart(moodAsync: ref.watch(_moodTrendProvider))
               .animate(delay: 60.ms)
-              .fadeIn(duration: 350.ms)
-              .slideY(begin: 0.05, end: 0),
+              .fadeIn(duration: 350.ms),
           const SizedBox(height: 24),
           const _SectionTitle(title: 'Activity Heatmap')
               .animate(delay: 120.ms)
-              .fadeIn(duration: 300.ms)
-              .slideX(begin: -0.05, end: 0),
+              .fadeIn(duration: 300.ms),
           const SizedBox(height: 8),
           _ActivityHeatmap(heatmapAsync: ref.watch(_heatmapProvider))
               .animate(delay: 180.ms)
-              .fadeIn(duration: 350.ms)
-              .slideY(begin: 0.05, end: 0),
+              .fadeIn(duration: 350.ms),
           const SizedBox(height: 24),
           const _SectionTitle(title: 'Top Tags')
               .animate(delay: 240.ms)
-              .fadeIn(duration: 300.ms)
-              .slideX(begin: -0.05, end: 0),
+              .fadeIn(duration: 300.ms),
           const SizedBox(height: 8),
           _TopTagsChart(tagsAsync: ref.watch(_topTagsProvider))
               .animate(delay: 300.ms)
-              .fadeIn(duration: 350.ms)
-              .slideY(begin: 0.05, end: 0),
+              .fadeIn(duration: 350.ms),
           const SizedBox(height: 24),
           const _SectionTitle(title: 'Time of Day')
               .animate(delay: 360.ms)
-              .fadeIn(duration: 300.ms)
-              .slideX(begin: -0.05, end: 0),
+              .fadeIn(duration: 300.ms),
           const SizedBox(height: 8),
           _TimeOfDayWidget(timeAsync: ref.watch(_timeOfDayProvider))
               .animate(delay: 420.ms)
-              .fadeIn(duration: 350.ms)
-              .slideY(begin: 0.05, end: 0),
+              .fadeIn(duration: 350.ms),
           const SizedBox(height: 40),
         ],
       ),

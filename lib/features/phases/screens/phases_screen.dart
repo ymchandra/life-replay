@@ -19,7 +19,7 @@ class PhasesScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Life Phases'),
+        title: const Text('Chapters'),
         centerTitle: false,
         actions: [
           IconButton(
@@ -34,10 +34,10 @@ class PhasesScreen extends ConsumerWidget {
         data: (phases) {
           if (phases.isEmpty) {
             return const EmptyState(
-              imagePath: 'assets/images/hero_phases.png',
-              title: 'No phases detected yet',
+              icon: Icons.menu_book_outlined,
+              title: 'No chapters yet',
               subtitle:
-                  'Add more memories and life phases will be automatically detected based on your activity patterns.',
+                  'Add more memories and life chapters will be automatically detected based on your activity patterns.',
             );
           }
 
@@ -163,8 +163,7 @@ class _PhaseCard extends ConsumerWidget {
       ),
     )
         .animate(delay: Duration(milliseconds: animIndex * 80))
-        .fadeIn(duration: 350.ms)
-        .slideY(begin: 0.05, end: 0, duration: 350.ms);
+        .fadeIn(duration: 350.ms);
   }
 
   Color _phaseColor(String phaseType) {

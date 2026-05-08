@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iconsax/iconsax.dart';
@@ -7,6 +6,7 @@ import 'package:life_replay/core/database/database_helper.dart';
 import 'package:life_replay/core/providers/database_provider.dart';
 import 'package:life_replay/core/providers/events_provider.dart';
 import 'package:life_replay/core/utils/date_utils.dart' as app_date_utils;
+import 'package:life_replay/features/quick_capture/widgets/quick_capture_sheet.dart';
 import 'package:life_replay/features/timeline/widgets/event_card.dart';
 import 'package:life_replay/features/timeline/widgets/timeline_header.dart';
 import 'package:life_replay/shared/widgets/empty_state.dart';
@@ -32,6 +32,19 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen> {
         }
       }
     }
+  }
+
+  void _openQuickCapture() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => QuickCaptureSheet(
+        onSaved: () {
+          ref.read(eventsProvider.notifier).loadEvents();
+        },
+      ),
+    );
   }
 
   @override
@@ -61,7 +74,7 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen> {
               data: (events) {
                 if (events.isEmpty) {
                   return const EmptyState(
-                    imagePath: 'assets/images/hero_timeline.png',
+                    icon: Icons.timeline_outlined,
                     title: 'No memories yet',
                     subtitle: 'Tap + to capture your first memory',
                   );
@@ -120,14 +133,9 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         heroTag: 'timeline_add_event_fab',
-        onPressed: () => context.push('/event/new'),
+        onPressed: _openQuickCapture,
         child: const Icon(Iconsax.add),
-      ).animate().scale(
-            begin: const Offset(0, 0),
-            end: const Offset(1, 1),
-            duration: 350.ms,
-            curve: Curves.elasticOut,
-          ),
+      ),
     );
   }
 }
@@ -168,31 +176,25 @@ class _TimelineConnector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = Theme.of(context).colorScheme.primary.withOpacity(0.3);
+    final color = Theme.of(context).colorScheme.primary.withOpacity(0.25);
     return SizedBox(
       width: 32,
       child: Column(
         children: [
           if (!isFirst)
-            Container(width: 2, height: 8, color: color)
+            Container(width: 1, height: 8, color: color)
           else
             const SizedBox(height: 8),
           Container(
-            width: 10,
-            height: 10,
+            width: 7,
+            height: 7,
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primary,
+              color: Theme.of(context).colorScheme.primary.withOpacity(0.7),
               shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: Theme.of(context).colorScheme.primary.withOpacity(0.4),
-                  blurRadius: 6,
-                ),
-              ],
             ),
           ),
           if (!isLast)
-            Container(width: 2, height: 80, color: color)
+            Container(width: 1, height: 80, color: color)
           else
             const SizedBox(height: 8),
         ],

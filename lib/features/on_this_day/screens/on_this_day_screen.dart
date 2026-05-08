@@ -34,7 +34,7 @@ class OnThisDayScreen extends ConsumerWidget {
         data: (events) {
           if (events.isEmpty) {
             return const EmptyState(
-              imagePath: 'assets/images/hero_on_this_day.png',
+              icon: Icons.calendar_today_outlined,
               title: 'No memories on this day',
               subtitle: 'Add memories and they\'ll appear here on the same date next year.',
             );

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:life_replay/core/theme/app_theme.dart';
 
 class EmptyState extends StatelessWidget {
   final IconData? icon;
@@ -38,7 +39,19 @@ class EmptyState extends StatelessWidget {
                 ),
               )
             else
-              Icon(icon, size: 80, color: cs.onSurfaceVariant.withOpacity(0.3)),
+              Container(
+                width: 96,
+                height: 96,
+                decoration: BoxDecoration(
+                  color: AppTheme.primary.withOpacity(0.08),
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: AppTheme.primary.withOpacity(0.2),
+                    width: 1,
+                  ),
+                ),
+                child: Icon(icon, size: 44, color: cs.onSurfaceVariant.withOpacity(0.5)),
+              ),
             const SizedBox(height: 20),
             Text(
               title,

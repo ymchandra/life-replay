@@ -1,10 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  Life Replay icon foreground.
+  Design: three timeline dots connected by a line (life moments),
+  with a right-pointing play triangle below (replay).
+  All white on transparent so the amber background shows through.
+  Viewport 108×108 dp; safe zone is the inner 72×72 dp (18–90 each axis).
+-->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
+
+    <!-- Horizontal timeline bar  (y=43, height=3, x 22→86) -->
     <path
         android:fillColor="#FFFFFF"
-        android:pathData="M54,30 C54,30 36,42 36,54 C36,63.94 44.06,72 54,72 C63.94,72 72,63.94 72,54 C72,42 54,30 54,30Z"/>
+        android:pathData="M22,41.5 L86,41.5 L86,44.5 L22,44.5 Z"/>
+
+    <!-- Left dot  (circle at 22,43  r=6) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M22,37 A6,6,0,1,0,22,49 A6,6,0,1,0,22,37 Z"/>
+
+    <!-- Center dot  (circle at 54,43  r=6) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,37 A6,6,0,1,0,54,49 A6,6,0,1,0,54,37 Z"/>
+
+    <!-- Right dot  (circle at 86,43  r=6) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M86,37 A6,6,0,1,0,86,49 A6,6,0,1,0,86,37 Z"/>
+
+    <!-- Play triangle pointing right  (centered at 54,68) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M43,59 L43,77 L69,68 Z"/>
 </vector>

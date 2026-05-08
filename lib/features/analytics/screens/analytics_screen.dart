@@ -5,8 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:life_replay/core/providers/database_provider.dart';
 import 'package:life_replay/core/theme/app_theme.dart';
-import 'package:life_replay/shared/widgets/app_hero_image.dart';
 import 'package:life_replay/shared/widgets/glassmorphism_card.dart';
+import 'package:life_replay/shared/widgets/warm_hero_art.dart';
 
 final _moodTrendProvider = FutureProvider.autoDispose<List<Map<String, dynamic>>>((ref) async {
   final db = ref.watch(databaseProvider);
@@ -38,10 +38,8 @@ class AnalyticsScreen extends ConsumerWidget {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          const AppHeroImage(
-            assetPath: 'assets/images/hero_analytics.png',
-            height: 180,
-          ).animate().fadeIn(duration: 400.ms),
+          const WarmHeroArt(variant: HeroArtVariant.insights, height: 180)
+              .animate().fadeIn(duration: 400.ms),
           const SizedBox(height: 20),
           const _SectionTitle(title: 'Mood Trend (Last 30 Days)')
               .animate()

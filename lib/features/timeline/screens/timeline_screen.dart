@@ -74,7 +74,7 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen> {
               data: (events) {
                 if (events.isEmpty) {
                   return const EmptyState(
-                    imagePath: 'assets/images/hero_timeline.png',
+                    icon: Icons.timeline_outlined,
                     title: 'No memories yet',
                     subtitle: 'Tap + to capture your first memory',
                   );

@@ -34,7 +34,7 @@ class PhasesScreen extends ConsumerWidget {
         data: (phases) {
           if (phases.isEmpty) {
             return const EmptyState(
-              imagePath: 'assets/images/hero_phases.png',
+              icon: Icons.menu_book_outlined,
               title: 'No chapters yet',
               subtitle:
                   'Add more memories and life chapters will be automatically detected based on your activity patterns.',

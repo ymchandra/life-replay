@@ -115,7 +115,7 @@ class _QuickCaptureSheetState extends ConsumerState<QuickCaptureSheet> {
                 textCapitalization: TextCapitalization.sentences,
                 style: Theme.of(context).textTheme.bodyLarge,
                 decoration: InputDecoration(
-                  hintText: 'What's on your mind right now?',
+                  hintText: "What's on your mind right now?",
                   hintStyle: TextStyle(color: cs.onSurfaceVariant),
                   filled: false,
                   border: InputBorder.none,

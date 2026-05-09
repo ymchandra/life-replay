@@ -8,6 +8,7 @@ import 'package:life_replay/core/theme/app_theme.dart';
 import 'package:life_replay/core/theme/context_theme.dart';
 import 'package:life_replay/core/utils/date_utils.dart' as app_date_utils;
 import 'package:life_replay/shared/widgets/mood_indicator.dart';
+import 'package:life_replay/shared/widgets/swipe_to_reveal_card.dart';
 import 'package:life_replay/shared/widgets/tag_chip.dart';
 
 /// Linear timeline view that shows events in chronological order with connecting lines.
@@ -15,12 +16,16 @@ class LinearTimelineView extends StatelessWidget {
   final Map<String, List<LifeEvent>> groupedEvents;
   final Map<int, List<String>> tagCache;
   final Function(LifeEvent) onEventTap;
+  final Function(LifeEvent)? onEventEdit;
+  final Function(LifeEvent)? onEventDelete;
 
   const LinearTimelineView({
     super.key,
     required this.groupedEvents,
     required this.tagCache,
     required this.onEventTap,
+    this.onEventEdit,
+    this.onEventDelete,
   });
 
   @override
@@ -92,6 +97,8 @@ class LinearTimelineView extends StatelessWidget {
                             isLast: isLast,
                             animationIndex: dateIdx * 3 + eventIdx,
                             onTap: () => onEventTap(event),
+                            onEdit: onEventEdit != null ? () => onEventEdit!(event) : null,
+                            onDelete: onEventDelete != null ? () => onEventDelete!(event) : null,
                           );
                         }),
                       ),
@@ -117,6 +124,8 @@ class _TimelineEventNode extends StatelessWidget {
   final bool isLast;
   final int animationIndex;
   final VoidCallback onTap;
+  final VoidCallback? onEdit;
+  final VoidCallback? onDelete;
 
   const _TimelineEventNode({
     required this.event,
@@ -125,6 +134,8 @@ class _TimelineEventNode extends StatelessWidget {
     required this.isLast,
     required this.animationIndex,
     required this.onTap,
+    this.onEdit,
+    this.onDelete,
   });
 
   Color _accentColor(ColorScheme cs) {
@@ -183,15 +194,27 @@ class _TimelineEventNode extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 12),
-            // Event card — fills the remaining width
+            // Event card — fills the remaining width, swipe-to-reveal if callbacks set
             Expanded(
-              child: _TimelineEventCard(
-                event: event,
-                tags: tags,
-                accent: accent,
-                hasPhoto: hasPhoto,
-                onTap: onTap,
-              ),
+              child: onEdit != null && onDelete != null
+                  ? SwipeToRevealCard(
+                      onEdit: onEdit!,
+                      onDelete: onDelete!,
+                      child: _TimelineEventCard(
+                        event: event,
+                        tags: tags,
+                        accent: accent,
+                        hasPhoto: hasPhoto,
+                        onTap: onTap,
+                      ),
+                    )
+                  : _TimelineEventCard(
+                      event: event,
+                      tags: tags,
+                      accent: accent,
+                      hasPhoto: hasPhoto,
+                      onTap: onTap,
+                    ),
             ),
           ],
         ),

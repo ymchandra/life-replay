@@ -7,7 +7,6 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:life_replay/core/models/life_event.dart';
-import 'package:life_replay/core/utils/date_utils.dart' as app_date_utils;
 import 'package:life_replay/core/utils/on_device_event_inference.dart';
 import 'package:life_replay/core/providers/database_provider.dart';
 import 'package:life_replay/core/providers/events_provider.dart';
@@ -387,44 +386,27 @@ class _EventEditorScreenState extends ConsumerState<EventEditorScreen>
             icon: Icon(Iconsax.trash, color: context.appColors.error),
             onPressed: _delete,
           ),
-        TextButton.icon(
-          onPressed: _isLoading ? null : _save,
-          icon: _isLoading
-              ? const SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              : const Icon(Iconsax.tick_circle, size: 18),
-          label: const Text('Save'),
-        ),
+        _isLoading
+            ? const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 14),
+                child: SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2.5),
+                ),
+              )
+            : IconButton(
+                onPressed: _save,
+                icon: Icon(
+                  Iconsax.tick_circle,
+                  size: 26,
+                  color: context.appColors.secondary,
+                ),
+                tooltip: 'Save memory',
+              ),
       ],
       body: Column(
         children: [
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
-            color: cs.surfaceVariant.withOpacity(0.35),
-            child: Row(
-              children: [
-                Icon(Iconsax.magicpen, size: 16, color: cs.primary),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    'On-device AI: "${_inference.title}"',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: context.appText.bodySmall,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  app_date_utils.moodEmoji(_inference.mood),
-                  style: const TextStyle(fontSize: 20),
-                ),
-              ],
-            ),
-          ),
           Expanded(
             child: SingleChildScrollView(
               controller: _scrollController,
@@ -473,7 +455,7 @@ class _EventEditorScreenState extends ConsumerState<EventEditorScreen>
                          maxLines: null,
                          minLines: 16,
                          decoration: InputDecoration(
-                           hintText: 'Write your memory here...\\n\\nFormatting toolbar appears when you start typing.',
+                           hintText: 'Write your memory here...',
                            border: OutlineInputBorder(
                              borderRadius: BorderRadius.circular(12),
                              borderSide: BorderSide(

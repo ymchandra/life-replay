@@ -49,6 +49,32 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen> {
     }
   }
 
+  Future<void> _deleteEvent(dynamic event) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Delete Memory'),
+        content: Text('Delete "${event.title}"? This cannot be undone.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(
+              'Delete',
+              style: TextStyle(color: Theme.of(context).colorScheme.error),
+            ),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true && event.id != null) {
+      await ref.read(eventsProvider.notifier).deleteEvent(event.id!);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final eventsAsync = ref.watch(eventsProvider);
@@ -99,11 +125,15 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen> {
                           groupedEvents: grouped,
                           tagCache: _tagCache,
                           onEventTap: _navigateToEvent,
+                          onEventEdit: _navigateToEvent,
+                          onEventDelete: _deleteEvent,
                         )
                       : GridTimelineView(
                           groupedEvents: grouped,
                           tagCache: _tagCache,
                           onEventTap: _navigateToEvent,
+                          onEventEdit: _navigateToEvent,
+                          onEventDelete: _deleteEvent,
                         ),
                 ),
               ),

@@ -5,18 +5,23 @@ import 'package:life_replay/core/theme/context_theme.dart';
 import 'package:life_replay/core/utils/date_utils.dart' as app_date_utils;
 import 'package:life_replay/features/timeline/widgets/event_tile.dart';
 import 'package:life_replay/features/timeline/widgets/timeline_header.dart';
+import 'package:life_replay/shared/widgets/swipe_to_reveal_card.dart';
 
 /// Grid timeline view (original masonry layout).
 class GridTimelineView extends StatelessWidget {
   final Map<String, List<LifeEvent>> groupedEvents;
   final Map<int, List<String>> tagCache;
   final Function(LifeEvent) onEventTap;
+  final Function(LifeEvent)? onEventEdit;
+  final Function(LifeEvent)? onEventDelete;
 
   const GridTimelineView({
     super.key,
     required this.groupedEvents,
     required this.tagCache,
     required this.onEventTap,
+    this.onEventEdit,
+    this.onEventDelete,
   });
 
   @override
@@ -51,12 +56,21 @@ class GridTimelineView extends StatelessWidget {
                         itemCount: dayEvents.length,
                         itemBuilder: (context, i) {
                           final event = dayEvents[i];
-                          return EventTile(
+                          final tile = EventTile(
                             event: event,
                             tags: tagCache[event.id] ?? [],
                             animationIndex: globalOffset + i,
                             onTap: () => onEventTap(event),
                           );
+                          if (onEventEdit != null && onEventDelete != null) {
+                            return SwipeToRevealCard(
+                              borderRadius: BorderRadius.circular(16),
+                              onEdit: () => onEventEdit!(event),
+                              onDelete: () => onEventDelete!(event),
+                              child: tile,
+                            );
+                          }
+                          return tile;
                         },
                       ),
                     ),

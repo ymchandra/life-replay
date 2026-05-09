@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
   Life Replay icon foreground.
-  Design: orbit rings + memory dots + central sparkle (no play button).
-  Indigo glyph with amber highlight over a soft branded background.
+  Design: two 4-point sparkle stars — large Indigo + small Amber accent.
+  Clean, minimal, no rings or dots.
 -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
@@ -10,39 +10,14 @@
     android:viewportWidth="108"
     android:viewportHeight="108">
 
-    <path
-        android:fillColor="#00FFFFFF"
-        android:pathData="M54,20 A34,34 0 1 1 28,76"
-        android:strokeColor="#FF6366F1"
-        android:strokeLineCap="round"
-        android:strokeWidth="8" />
-
-    <path
-        android:fillColor="#00FFFFFF"
-        android:pathData="M70,42 A16,16 0 1 1 54,74"
-        android:strokeColor="#E6F59E0B"
-        android:strokeLineCap="round"
-        android:strokeWidth="5" />
-
+    <!-- Large Indigo sparkle centred at ~(44, 50) -->
     <path
         android:fillColor="#FF6366F1"
-        android:pathData="M25,46 A5,5 0 1 0 25,56 A5,5 0 1 0 25,46 Z" />
+        android:pathData="M44,20 L47.5,41 L68,44.5 L47.5,48 L44,69 L40.5,48 L20,44.5 L40.5,41 Z" />
 
-    <path
-        android:fillColor="#FF6366F1"
-        android:pathData="M72,22 A5,5 0 1 0 72,32 A5,5 0 1 0 72,22 Z" />
-
-    <path
-        android:fillColor="#FF6366F1"
-        android:pathData="M74,72 A5,5 0 1 0 74,82 A5,5 0 1 0 74,72 Z" />
-
-    <path
-        android:fillColor="#FF6366F1"
-        android:pathData="M54,40 L58,50 L68,54 L58,58 L54,68 L50,58 L40,54 L50,50 Z" />
-
+    <!-- Small Amber sparkle at ~(76, 32) -->
     <path
         android:fillColor="#FFF59E0B"
-        android:pathData="M70,38 L72,43 L77,45 L72,47 L70,52 L68,47 L63,45 L68,43 Z" />
+        android:pathData="M76,20 L77.8,29 L87,30.8 L77.8,32.6 L76,42 L74.2,32.6 L65,30.8 L74.2,29 Z" />
 
 </vector>
-

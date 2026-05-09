@@ -3,18 +3,52 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
-  // Light and vibrant palette — playful violet + coral accents.
-  static const Color background = Color(0xFFF6F4FF);
+  // Modern Indigo + Amber palette for clear focus and warm accents.
+  static const Color background = Color(0xFFF5F4FF);
   static const Color surface = Color(0xFFFFFFFF);
-  static const Color surfaceVariant = Color(0xFFEDE9FF);
-  static const Color primary = Color(0xFF6C4DFF);
-  static const Color primaryVariant = Color(0xFF5138CC);
-  static const Color secondary = Color(0xFFFF5D8F);
-  static const Color onBackground = Color(0xFF1F173D);
-  static const Color onSurface = Color(0xFF2A2052);
-  static const Color onSurfaceVariant = Color(0xFF6A5E96);
-  static const Color error = Color(0xFFD9345E);
-  static const Color divider = Color(0xFFD8D0FF);
+  static const Color surfaceVariant = Color(0xFFE8E7FF);
+  static const Color primary = Color(0xFF6366F1);
+  static const Color primaryVariant = Color(0xFF4F46E5);
+  static const Color secondary = Color(0xFFF59E0B);
+  static const Color onBackground = Color(0xFF1A1B3A);
+  static const Color onSurface = Color(0xFF23254A);
+  static const Color onSurfaceVariant = Color(0xFF666A91);
+  static const Color error = Color(0xFFD14343);
+  static const Color divider = Color(0xFFD8D9F4);
+
+  static Color moodColor(int mood, {Color? fallback}) {
+    switch (mood) {
+      case 1:
+        return const Color(0xFFB45309);
+      case 2:
+        return const Color(0xFFD97706);
+      case 3:
+        return secondary;
+      case 4:
+        return const Color(0xFF818CF8);
+      case 5:
+        return primary;
+      default:
+        return fallback ?? onSurfaceVariant;
+    }
+  }
+
+  static Color phaseColor(String phaseType) {
+    switch (phaseType) {
+      case 'work':
+        return primary;
+      case 'travel':
+        return const Color(0xFF7C83F6);
+      case 'social':
+        return secondary;
+      case 'creative':
+        return const Color(0xFF8B5CF6);
+      case 'recovery':
+        return const Color(0xFFFBBF24);
+      default:
+        return onSurfaceVariant;
+    }
+  }
 
   static ThemeData get lightTheme {
     final textTheme = TextTheme(
@@ -53,9 +87,9 @@ class AppTheme {
         primary: primary,
         primaryContainer: primaryVariant,
         secondary: secondary,
-        secondaryContainer: Color(0xFFFFD7E3),
-        tertiary: Color(0xFF2FB6FF),
-        tertiaryContainer: Color(0xFFCEF1FF),
+        secondaryContainer: Color(0xFFFFE8BF),
+        tertiary: Color(0xFF8B5CF6),
+        tertiaryContainer: Color(0xFFEDE9FE),
         appBarColor: background,
         error: error,
       ),
@@ -85,8 +119,14 @@ class AppTheme {
         ),
       ),
       floatingActionButtonTheme: base.floatingActionButtonTheme.copyWith(
-        backgroundColor: primary,
-        foregroundColor: Colors.white,
+        backgroundColor: secondary,
+        foregroundColor: onBackground,
+      ),
+      tabBarTheme: base.tabBarTheme.copyWith(
+        indicatorColor: secondary,
+        labelColor: secondary,
+        unselectedLabelColor: onSurfaceVariant,
+        dividerColor: divider.withOpacity(0.5),
       ),
       inputDecorationTheme: base.inputDecorationTheme.copyWith(
         filled: true,

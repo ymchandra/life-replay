@@ -2,7 +2,7 @@
 <!--
   Life Replay icon foreground.
   Design: orbit rings + memory dots + central sparkle (no play button).
-  Vivid glyph over a light gradient background.
+  Indigo glyph with amber highlight over a soft branded background.
 -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
@@ -13,35 +13,35 @@
     <path
         android:fillColor="#00FFFFFF"
         android:pathData="M54,20 A34,34 0 1 1 28,76"
-        android:strokeColor="#FF5C40E8"
+        android:strokeColor="#FF6366F1"
         android:strokeLineCap="round"
         android:strokeWidth="8" />
 
     <path
         android:fillColor="#00FFFFFF"
         android:pathData="M70,42 A16,16 0 1 1 54,74"
-        android:strokeColor="#E6A036F0"
+        android:strokeColor="#E6F59E0B"
         android:strokeLineCap="round"
         android:strokeWidth="5" />
 
     <path
-        android:fillColor="#FF5C40E8"
+        android:fillColor="#FF6366F1"
         android:pathData="M25,46 A5,5 0 1 0 25,56 A5,5 0 1 0 25,46 Z" />
 
     <path
-        android:fillColor="#FF5C40E8"
+        android:fillColor="#FF6366F1"
         android:pathData="M72,22 A5,5 0 1 0 72,32 A5,5 0 1 0 72,22 Z" />
 
     <path
-        android:fillColor="#FF5C40E8"
+        android:fillColor="#FF6366F1"
         android:pathData="M74,72 A5,5 0 1 0 74,82 A5,5 0 1 0 74,72 Z" />
 
     <path
-        android:fillColor="#FF5C40E8"
+        android:fillColor="#FF6366F1"
         android:pathData="M54,40 L58,50 L68,54 L58,58 L54,68 L50,58 L40,54 L50,50 Z" />
 
     <path
-        android:fillColor="#FFFF4E88"
+        android:fillColor="#FFF59E0B"
         android:pathData="M70,38 L72,43 L77,45 L72,47 L70,52 L68,47 L63,45 L68,43 Z" />
 
 </vector>

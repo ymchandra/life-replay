@@ -53,10 +53,6 @@ class InsightsScreen extends ConsumerWidget {
             Container(
               color: cs.surface,
               child: TabBar(
-                indicatorColor: cs.primary,
-                indicatorWeight: 2.5,
-                labelColor: cs.primary,
-                unselectedLabelColor: cs.onSurfaceVariant,
                 labelStyle: context.appText.labelLarge?.copyWith(fontWeight: FontWeight.w700),
                 unselectedLabelStyle: context.appText.labelLarge,
                 tabs: const [
@@ -183,14 +179,7 @@ class _PhaseCard extends ConsumerWidget {
   const _PhaseCard({required this.phase, required this.animIndex});
 
   Color _phaseColor(String type) {
-    switch (type) {
-      case 'work':     return const Color(0xFF6366F1);
-      case 'travel':   return const Color(0xFF06B6D4);
-      case 'social':   return const Color(0xFFF59E0B);
-      case 'creative': return const Color(0xFF8B5CF6);
-      case 'recovery': return const Color(0xFF10B981);
-      default:         return const Color(0xFF6B7280);
-    }
+    return AppTheme.phaseColor(type);
   }
 
   String _moodEmojiFrom(double mood) {
@@ -532,7 +521,7 @@ class _ActivityHeatmap extends StatelessWidget {
   const _ActivityHeatmap({required this.heatmapAsync});
 
   Color _heatColor(int count) {
-    if (count == 0) return const Color(0xFF21262D);
+    if (count == 0) return AppTheme.surfaceVariant;
     if (count == 1) return AppTheme.primary.withOpacity(0.3);
     if (count == 2) return AppTheme.primary.withOpacity(0.5);
     if (count == 3) return AppTheme.primary.withOpacity(0.7);

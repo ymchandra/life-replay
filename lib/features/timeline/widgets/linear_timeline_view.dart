@@ -4,6 +4,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:intl/intl.dart';
 import 'package:life_replay/core/models/life_event.dart';
+import 'package:life_replay/core/theme/app_theme.dart';
 import 'package:life_replay/core/theme/context_theme.dart';
 import 'package:life_replay/core/utils/date_utils.dart' as app_date_utils;
 import 'package:life_replay/shared/widgets/mood_indicator.dart';
@@ -127,20 +128,7 @@ class _TimelineEventNode extends StatelessWidget {
   });
 
   Color _accentColor(ColorScheme cs) {
-    switch (event.mood) {
-      case 1:
-        return const Color(0xFFF85149);
-      case 2:
-        return const Color(0xFFF0883E);
-      case 3:
-        return cs.primary;
-      case 4:
-        return const Color(0xFF3FB950);
-      case 5:
-        return const Color(0xFF58A6FF);
-      default:
-        return cs.primary;
-    }
+    return AppTheme.moodColor(event.mood, fallback: cs.primary);
   }
 
   @override

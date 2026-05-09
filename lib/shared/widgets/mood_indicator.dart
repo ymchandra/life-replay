@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:life_replay/core/theme/app_theme.dart';
 import 'package:life_replay/core/theme/context_theme.dart';
 
 class MoodIndicator extends StatelessWidget {
@@ -14,20 +15,7 @@ class MoodIndicator extends StatelessWidget {
   });
 
   Color _moodColor(BuildContext context) {
-    switch (mood) {
-      case 1:
-        return const Color(0xFFF85149);
-      case 2:
-        return const Color(0xFFF0883E);
-      case 3:
-        return const Color(0xFFD29922);
-      case 4:
-        return const Color(0xFF3FB950);
-      case 5:
-        return const Color(0xFF58A6FF);
-      default:
-        return context.appColors.onSurfaceVariant;
-    }
+    return AppTheme.moodColor(mood, fallback: context.appColors.onSurfaceVariant);
   }
 
   String get _emoji {

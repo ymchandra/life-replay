@@ -28,13 +28,19 @@ class EventEditorScreen extends ConsumerStatefulWidget {
   ConsumerState<EventEditorScreen> createState() => _EventEditorScreenState();
 }
 
-class _EventEditorScreenState extends ConsumerState<EventEditorScreen> {
+class _EventEditorScreenState extends ConsumerState<EventEditorScreen>
+    with TickerProviderStateMixin {
   final _contentController = TextEditingController();
   final _scrollController = ScrollController();
+  final _contentFocusNode = FocusNode();
+  late AnimationController _toolbarAnimController;
+  late Animation<double> _toolbarOpacity;
+  late Animation<Offset> _toolbarSlide;
 
   String? _photoPath;
   bool _isLoading = false;
   bool _isEditing = false;
+  bool _isToolbarVisible = false;
   LifeEvent? _originalEvent;
   DateTime _timestamp = DateTime.now();
   List<String> _existingTags = const [];
@@ -48,6 +54,20 @@ class _EventEditorScreenState extends ConsumerState<EventEditorScreen> {
   void initState() {
     super.initState();
     _contentController.addListener(_refreshInference);
+    _contentFocusNode.addListener(_updateToolbarVisibility);
+
+    // Setup toolbar animations
+    _toolbarAnimController = AnimationController(
+      duration: const Duration(milliseconds: 250),
+      vsync: this,
+    );
+    _toolbarOpacity = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(parent: _toolbarAnimController, curve: Curves.easeOut),
+    );
+    _toolbarSlide = Tween<Offset>(begin: const Offset(0, 0.1), end: Offset.zero)
+        .animate(
+      CurvedAnimation(parent: _toolbarAnimController, curve: Curves.easeOut),
+    );
 
     if (widget.eventId != null) {
       _isEditing = true;
@@ -55,6 +75,20 @@ class _EventEditorScreenState extends ConsumerState<EventEditorScreen> {
     } else if (widget.initialContent != null && widget.initialContent!.isNotEmpty) {
       _contentController.text = widget.initialContent!;
       _refreshInference();
+    }
+  }
+
+  void _updateToolbarVisibility() {
+    final isFocused = _contentFocusNode.hasFocus;
+    if (isFocused && !_isToolbarVisible) {
+      setState(() => _isToolbarVisible = true);
+      _toolbarAnimController.forward();
+    } else if (!isFocused && _isToolbarVisible) {
+      _toolbarAnimController.reverse().then((_) {
+        if (mounted) {
+          setState(() => _isToolbarVisible = false);
+        }
+      });
     }
   }
 
@@ -81,7 +115,10 @@ class _EventEditorScreenState extends ConsumerState<EventEditorScreen> {
   void dispose() {
     _contentController.removeListener(_refreshInference);
     _contentController.dispose();
+    _contentFocusNode.removeListener(_updateToolbarVisibility);
+    _contentFocusNode.dispose();
     _scrollController.dispose();
+    _toolbarAnimController.dispose();
     super.dispose();
   }
 
@@ -327,7 +364,7 @@ class _EventEditorScreenState extends ConsumerState<EventEditorScreen> {
           TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+            child: Text('Delete', style: TextStyle(color: context.appColors.error)),
           ),
         ],
       ),
@@ -347,7 +384,7 @@ class _EventEditorScreenState extends ConsumerState<EventEditorScreen> {
       actions: [
         if (_isEditing)
           IconButton(
-            icon: const Icon(Iconsax.trash, color: Colors.redAccent),
+            icon: Icon(Iconsax.trash, color: context.appColors.error),
             onPressed: _delete,
           ),
         TextButton.icon(
@@ -423,81 +460,162 @@ class _EventEditorScreenState extends ConsumerState<EventEditorScreen> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 10),
-                  // Formatting toolbar
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.fromLTRB(8, 6, 8, 6),
-                    decoration: BoxDecoration(
-                      color: cs.surface,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: cs.surfaceVariant),
-                    ),
-                    child: Row(
-                      children: [
-                        IconButton(
-                          tooltip: 'Insert image',
-                          onPressed: _insertImageInline,
-                          icon: const Icon(Iconsax.gallery),
-                        ),
-                        IconButton(
-                          tooltip: 'Bullet list',
-                          onPressed: () => _insertAtCursor('\n- '),
-                          icon: const Icon(Iconsax.textalign_left),
-                        ),
-                        IconButton(
-                          tooltip: 'Highlight',
-                          onPressed: () => _insertAtCursor(' **highlight** '),
-                          icon: const Icon(Iconsax.pen_add),
-                        ),
-                        IconButton(
-                          tooltip: 'Capture or choose location',
-                          onPressed: () {
-                            showModalBottomSheet(
-                              context: context,
-                              builder: (context) => SafeArea(
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    ListTile(
-                                      leading: const Icon(Iconsax.location),
-                                      title: const Text('Use current location'),
-                                      onTap: () {
-                                        Navigator.pop(context);
-                                        _captureCurrentLocation();
-                                      },
-                                    ),
-                                    ListTile(
-                                      leading: const Icon(Iconsax.map),
-                                      title: const Text('Choose from map'),
-                                      onTap: () {
-                                        Navigator.pop(context);
-                                        _showLocationPicker();
-                                      },
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            );
-                          },
-                          icon: const Icon(Iconsax.location),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  TextField(
-                    controller: _contentController,
-                    keyboardType: TextInputType.multiline,
-                    textCapitalization: TextCapitalization.sentences,
-                    maxLines: null,
-                    minLines: 16,
-                    decoration: const InputDecoration(
-                      hintText: 'Write your memory here...\\n\\nUse the inline toolbar above for quick formatting and images.',
-                      border: InputBorder.none,
-                    ),
-                    style: context.appText.bodyLarge,
-                  ),
+                   const SizedBox(height: 14),
+                   // Modern inline floating toolbar with text field
+                   Stack(
+                     children: [
+                       // Main text field
+                       TextField(
+                         controller: _contentController,
+                         focusNode: _contentFocusNode,
+                         keyboardType: TextInputType.multiline,
+                         textCapitalization: TextCapitalization.sentences,
+                         maxLines: null,
+                         minLines: 16,
+                         decoration: InputDecoration(
+                           hintText: 'Write your memory here...\\n\\nFormatting toolbar appears when you start typing.',
+                           border: OutlineInputBorder(
+                             borderRadius: BorderRadius.circular(12),
+                             borderSide: BorderSide(
+                               color: cs.surfaceVariant,
+                               width: 1,
+                             ),
+                           ),
+                           enabledBorder: OutlineInputBorder(
+                             borderRadius: BorderRadius.circular(12),
+                             borderSide: BorderSide(
+                               color: cs.surfaceVariant.withOpacity(0.6),
+                               width: 1,
+                             ),
+                           ),
+                           focusedBorder: OutlineInputBorder(
+                             borderRadius: BorderRadius.circular(12),
+                             borderSide: BorderSide(
+                               color: cs.primary.withOpacity(0.8),
+                               width: 1.5,
+                             ),
+                           ),
+                           contentPadding: const EdgeInsets.all(14),
+                           filled: true,
+                           fillColor: cs.surface,
+                         ),
+                         style: context.appText.bodyLarge,
+                       ),
+                       // Floating toolbar overlay (appears on top when focused)
+                       if (_isToolbarVisible)
+                         Positioned(
+                           bottom: 0,
+                           left: 0,
+                           right: 0,
+                           child: SlideTransition(
+                             position: _toolbarSlide,
+                             child: FadeTransition(
+                               opacity: _toolbarOpacity,
+                               child: Transform.translate(
+                                 offset: const Offset(0, 50),
+                                 child: Container(
+                                   margin: const EdgeInsets.only(top: 2),
+                                   padding: const EdgeInsets.symmetric(
+                                       horizontal: 6, vertical: 4),
+                                   decoration: BoxDecoration(
+                                     color: cs.surface,
+                                     borderRadius: const BorderRadius.only(
+                                       bottomLeft: Radius.circular(12),
+                                       bottomRight: Radius.circular(12),
+                                     ),
+                                     border: Border(
+                                       left: BorderSide(
+                                           color: cs.surfaceVariant
+                                               .withOpacity(0.6)),
+                                       right: BorderSide(
+                                           color: cs.surfaceVariant
+                                               .withOpacity(0.6)),
+                                       bottom: BorderSide(
+                                           color: cs.surfaceVariant
+                                               .withOpacity(0.6)),
+                                     ),
+                                     boxShadow: [
+                                       BoxShadow(
+                                         color: cs.shadow.withOpacity(0.08),
+                                         blurRadius: 8,
+                                         offset: const Offset(0, 2),
+                                       ),
+                                     ],
+                                   ),
+                                   child: Row(
+                                     mainAxisAlignment:
+                                         MainAxisAlignment.spaceEvenly,
+                                     children: [
+                                       _ToolbarIconButton(
+                                         icon: Iconsax.gallery,
+                                         tooltip: 'Add image',
+                                         onPressed: _insertImageInline,
+                                       ),
+                                       _ToolbarIconButton(
+                                         icon: Iconsax.textalign_left,
+                                         tooltip: 'Bullet point',
+                                         onPressed: () =>
+                                             _insertAtCursor('\n- '),
+                                       ),
+                                       _ToolbarIconButton(
+                                         icon: Iconsax.pen_add,
+                                         tooltip: 'Highlight',
+                                         onPressed: () =>
+                                             _insertAtCursor(' **highlight** '),
+                                       ),
+                                       Container(
+                                         height: 24,
+                                         width: 1,
+                                         color: cs.surfaceVariant
+                                             .withOpacity(0.3),
+                                       ),
+                                       _ToolbarIconButton(
+                                         icon: Iconsax.location,
+                                         tooltip: 'Add location',
+                                         onPressed: () {
+                                           showModalBottomSheet(
+                                             context: context,
+                                             builder: (context) => SafeArea(
+                                               child: Column(
+                                                 mainAxisSize:
+                                                     MainAxisSize.min,
+                                                 children: [
+                                                   ListTile(
+                                                     leading: const Icon(
+                                                         Iconsax.location),
+                                                     title: const Text(
+                                                         'Use current location'),
+                                                     onTap: () {
+                                                       Navigator.pop(context);
+                                                       _captureCurrentLocation();
+                                                     },
+                                                   ),
+                                                   ListTile(
+                                                     leading:
+                                                         const Icon(Iconsax.map),
+                                                     title: const Text(
+                                                         'Choose from map'),
+                                                     onTap: () {
+                                                       Navigator.pop(context);
+                                                       _showLocationPicker();
+                                                     },
+                                                   ),
+                                                 ],
+                                               ),
+                                             ),
+                                           );
+                                         },
+                                       ),
+                                     ],
+                                   ),
+                                 ),
+                               ),
+                             ),
+                           ),
+                         ),
+                     ],
+                   ),
+                   const SizedBox(height: 12),
                   if (_photoPath != null) ...[
                     const SizedBox(height: 12),
                     ClipRRect(
@@ -536,3 +654,40 @@ class _EventEditorScreenState extends ConsumerState<EventEditorScreen> {
     );
   }
 }
+
+/// Compact toolbar icon button for the floating formatting toolbar
+class _ToolbarIconButton extends StatelessWidget {
+  final IconData icon;
+  final String tooltip;
+  final VoidCallback onPressed;
+
+  const _ToolbarIconButton({
+    required this.icon,
+    required this.tooltip,
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = context.appColors;
+    return Tooltip(
+      message: tooltip,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onPressed,
+          borderRadius: BorderRadius.circular(8),
+          child: Padding(
+            padding: const EdgeInsets.all(8),
+            child: Icon(
+              icon,
+              size: 20,
+              color: cs.onSurface,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+

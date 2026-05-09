@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Light vibrant diagonal gradient for adaptive launcher icon background. -->
+<!-- Indigo-first gradient with a warm amber tail for theme alignment. -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="rectangle">
     <gradient
-        android:startColor="#EEE8FF"
-        android:centerColor="#D8F1FF"
-        android:endColor="#FFD9E7"
+        android:startColor="#E8E7FF"
+        android:centerColor="#DCD8FF"
+        android:endColor="#FFE9C2"
         android:type="linear"
         android:angle="135" />
 </shape>

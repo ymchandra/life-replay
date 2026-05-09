@@ -252,7 +252,7 @@ class _ActivityHeatmap extends StatelessWidget {
   }
 
   Color _heatColor(int count) {
-    if (count == 0) return const Color(0xFF21262D);
+    if (count == 0) return AppTheme.surfaceVariant;
     if (count == 1) return AppTheme.primary.withOpacity(0.3);
     if (count == 2) return AppTheme.primary.withOpacity(0.5);
     if (count == 3) return AppTheme.primary.withOpacity(0.7);

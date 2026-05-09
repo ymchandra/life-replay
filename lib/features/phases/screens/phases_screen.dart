@@ -7,6 +7,7 @@ import 'package:life_replay/core/models/life_event.dart';
 import 'package:life_replay/core/models/life_phase.dart';
 import 'package:life_replay/core/providers/database_provider.dart';
 import 'package:life_replay/core/providers/phases_provider.dart';
+import 'package:life_replay/core/theme/app_theme.dart';
 import 'package:life_replay/core/theme/context_theme.dart';
 import 'package:life_replay/shared/widgets/app_scaffold.dart';
 import 'package:life_replay/shared/widgets/empty_state.dart';
@@ -170,19 +171,6 @@ class _PhaseCard extends ConsumerWidget {
   }
 
   Color _phaseColor(String phaseType) {
-    switch (phaseType) {
-      case 'work':
-        return const Color(0xFF6366F1);
-      case 'travel':
-        return const Color(0xFF06B6D4);
-      case 'social':
-        return const Color(0xFFF59E0B);
-      case 'creative':
-        return const Color(0xFF8B5CF6);
-      case 'recovery':
-        return const Color(0xFF10B981);
-      default:
-        return const Color(0xFF6B7280);
-    }
+    return AppTheme.phaseColor(phaseType);
   }
 }

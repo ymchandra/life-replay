@@ -1,9 +1,11 @@
+import 'dart:ui' show lerpDouble;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iconsax/iconsax.dart';
-import 'package:life_replay/core/models/life_event.dart';
 import 'package:life_replay/core/database/database_helper.dart';
+import 'package:life_replay/core/models/life_event.dart';
 import 'package:life_replay/core/providers/database_provider.dart';
 import 'package:life_replay/core/providers/events_provider.dart';
 import 'package:life_replay/core/utils/date_utils.dart' as app_date_utils;
@@ -15,7 +17,8 @@ import 'package:life_replay/shared/widgets/empty_state.dart';
 
 enum TimelineViewMode { linear, grid }
 
-final timelineViewModeProvider = StateProvider<TimelineViewMode>((ref) => TimelineViewMode.linear);
+final timelineViewModeProvider =
+    StateProvider<TimelineViewMode>((ref) => TimelineViewMode.linear);
 
 class TimelineScreen extends ConsumerStatefulWidget {
   const TimelineScreen({super.key});
@@ -26,6 +29,19 @@ class TimelineScreen extends ConsumerStatefulWidget {
 
 class _TimelineScreenState extends ConsumerState<TimelineScreen> {
   final Map<int, List<String>> _tagCache = {};
+  double _headerScrollOffset = 0;
+
+  bool _handleScrollNotification(ScrollNotification notification) {
+    if (notification.metrics.axis != Axis.vertical) return false;
+    final next = notification.metrics.pixels.clamp(0, 96).toDouble();
+    if ((next - _headerScrollOffset).abs() < 1.5) return false;
+    if (mounted) {
+      setState(() {
+        _headerScrollOffset = next;
+      });
+    }
+    return false;
+  }
 
   String _timeGreeting() {
     final h = DateTime.now().hour;
@@ -132,6 +148,7 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen> {
         monthEventCount: monthEvents,
         totalEventCount: totalEvents,
         streakDays: streak,
+        scrollOffset: _headerScrollOffset,
       ),
       actions: [
         IconButton(
@@ -170,21 +187,24 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen> {
               Expanded(
                 child: RefreshIndicator(
                   onRefresh: () => ref.read(eventsProvider.notifier).loadEvents(),
-                  child: viewMode == TimelineViewMode.linear
-                      ? LinearTimelineView(
-                          groupedEvents: grouped,
-                          tagCache: _tagCache,
-                          onEventTap: _navigateToEvent,
-                          onEventEdit: _navigateToEvent,
-                          onEventDelete: _deleteEvent,
-                        )
-                      : GridTimelineView(
-                          groupedEvents: grouped,
-                          tagCache: _tagCache,
-                          onEventTap: _navigateToEvent,
-                          onEventEdit: _navigateToEvent,
-                          onEventDelete: _deleteEvent,
-                        ),
+                  child: NotificationListener<ScrollNotification>(
+                    onNotification: _handleScrollNotification,
+                    child: viewMode == TimelineViewMode.linear
+                        ? LinearTimelineView(
+                            groupedEvents: grouped,
+                            tagCache: _tagCache,
+                            onEventTap: _navigateToEvent,
+                            onEventEdit: _navigateToEvent,
+                            onEventDelete: _deleteEvent,
+                          )
+                        : GridTimelineView(
+                            groupedEvents: grouped,
+                            tagCache: _tagCache,
+                            onEventTap: _navigateToEvent,
+                            onEventEdit: _navigateToEvent,
+                            onEventDelete: _deleteEvent,
+                          ),
+                  ),
                 ),
               ),
             ],
@@ -205,46 +225,85 @@ class _JourneyAppBarHeader extends StatelessWidget {
   final int monthEventCount;
   final int totalEventCount;
   final int streakDays;
+  final double scrollOffset;
 
   const _JourneyAppBarHeader({
     required this.greeting,
     required this.monthEventCount,
     required this.totalEventCount,
     required this.streakDays,
+    this.scrollOffset = 0,
   });
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final now = DateTime.now();
-    final month = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][now.month - 1];
+    final month = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec'
+    ][now.month - 1];
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.auto_awesome, size: 16),
-            const SizedBox(width: 6),
-            Text(
-              'Journey',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
-            ),
-          ],
-        ),
-        const SizedBox(height: 2),
-        Text(
-          '$greeting · $month ${now.day} · $monthEventCount this month · $totalEventCount total · $streakDays-day streak',
-          style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                color: cs.onSurfaceVariant,
-                fontWeight: FontWeight.w500,
+    final t = (scrollOffset / 72).clamp(0.0, 1.0);
+    final titleSize = lerpDouble(22, 18, t)!;
+    final subtitleOpacity = 1 - t;
+    final sparkleSize = lerpDouble(16, 14, t)!;
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 140),
+      curve: Curves.easeOut,
+      padding: EdgeInsets.only(top: lerpDouble(2, 0, t)!),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.auto_awesome, size: sparkleSize),
+              const SizedBox(width: 6),
+              Text(
+                'Journey',
+                style: Theme.of(context)
+                    .textTheme
+                    .titleLarge
+                    ?.copyWith(fontWeight: FontWeight.w700, fontSize: titleSize),
               ),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-      ],
+            ],
+          ),
+          AnimatedSize(
+            duration: const Duration(milliseconds: 140),
+            curve: Curves.easeOut,
+            child: subtitleOpacity < 0.08
+                ? const SizedBox.shrink()
+                : Opacity(
+                    opacity: subtitleOpacity,
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 2),
+                      child: Text(
+                        '$greeting · $month ${now.day} · $monthEventCount this month · $totalEventCount total · $streakDays-day streak',
+                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                              color: cs.onSurfaceVariant,
+                              fontWeight: FontWeight.w500,
+                            ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ),
+          ),
+        ],
+      ),
     );
   }
 }

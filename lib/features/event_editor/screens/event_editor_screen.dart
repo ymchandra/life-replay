@@ -178,14 +178,70 @@ class _EventEditorScreenState extends ConsumerState<EventEditorScreen>
   }
 
 
-  Future<void> _insertImageInline() async {
+  Future<void> _pickImageAttachment({bool insertReference = true}) async {
     final picker = ImagePicker();
     final image = await picker.pickImage(source: ImageSource.gallery, imageQuality: 85);
     if (image != null) {
       setState(() {
         _photoPath = image.path;
       });
+      if (insertReference) {
+        _insertAtCursor('\n📷 Photo attached\n');
+      }
     }
+  }
+
+  void _insertImageReferenceOnly() {
+    _insertAtCursor('\n📷 Photo\n');
+  }
+
+  void _insertChecklistTemplate() {
+    _insertAtCursor('\n\nChecklist:\n- \n- \n- ');
+  }
+
+  void _insertCurrentTimestamp() {
+    _insertAtCursor('\n${_formatTimestamp(DateTime.now())} — ');
+  }
+
+  void _insertKeyMoment() {
+    _insertAtCursor('\n✨ Key moment: ');
+  }
+
+  Future<void> _showImageOptions() async {
+    await showModalBottomSheet(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Iconsax.gallery),
+              title: const Text('Attach photo + mention in text'),
+              onTap: () {
+                Navigator.pop(context);
+                _pickImageAttachment(insertReference: true);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Iconsax.gallery_add),
+              title: const Text('Attach photo only'),
+              onTap: () {
+                Navigator.pop(context);
+                _pickImageAttachment(insertReference: false);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Iconsax.document_upload),
+              title: const Text('Insert image marker at cursor'),
+              onTap: () {
+                Navigator.pop(context);
+                _insertImageReferenceOnly();
+              },
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   void _insertAtCursor(String text) {
@@ -510,19 +566,23 @@ class _EventEditorScreenState extends ConsumerState<EventEditorScreen>
                             children: [
                               _ToolbarIconButton(
                                 icon: Iconsax.gallery,
-                                tooltip: 'Add image',
-                                onPressed: _insertImageInline,
+                                tooltip: 'Image options',
+                                onPressed: _showImageOptions,
                               ),
                               _ToolbarIconButton(
-                                icon: Iconsax.textalign_left,
-                                tooltip: 'Bullet point',
-                                onPressed: () => _insertAtCursor('\n• '),
+                                icon: Iconsax.task_square,
+                                tooltip: 'Insert checklist',
+                                onPressed: _insertChecklistTemplate,
                               ),
                               _ToolbarIconButton(
-                                icon: Iconsax.pen_add,
-                                tooltip: 'Highlight',
-                                onPressed: () =>
-                                    _insertAtCursor(' **highlight** '),
+                                icon: Iconsax.clock,
+                                tooltip: 'Insert current time',
+                                onPressed: _insertCurrentTimestamp,
+                              ),
+                              _ToolbarIconButton(
+                                icon: Iconsax.flash_1,
+                                tooltip: 'Key moment',
+                                onPressed: _insertKeyMoment,
                               ),
                               Container(
                                 height: 24,

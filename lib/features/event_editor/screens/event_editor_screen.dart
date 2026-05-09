@@ -404,13 +404,6 @@ class _EventEditorScreenState extends ConsumerState<EventEditorScreen> {
                           },
                           icon: const Icon(Iconsax.location),
                         ),
-                        const Spacer(),
-                        Text(
-                          'Mood ${_inference.mood}/5',
-                          style: context.appText.labelMedium?.copyWith(
-                            color: cs.onSurfaceVariant,
-                          ),
-                        ),
                       ],
                     ),
                   ),

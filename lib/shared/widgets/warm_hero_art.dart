@@ -55,10 +55,10 @@ class _HeroArtPainter extends CustomPainter {
 
   // ─── Shared helpers ──────────────────────────────────────────────────────
 
-  /// Fills the background with a warm dark gradient.
+  /// Fills the background with a vibrant light gradient.
   void _paintBackground(Canvas canvas, Size size,
-      {Color from = const Color(0xFF1E1A16),
-      Color to = const Color(0xFF2E2318)}) {
+      {Color from = const Color(0xFFF5EEFF),
+      Color to = const Color(0xFFE2F7FF)}) {
     final rect = Rect.fromLTWH(0, 0, size.width, size.height);
     canvas.drawRect(
       rect,
@@ -88,7 +88,7 @@ class _HeroArtPainter extends CustomPainter {
   // ─── Journey (Timeline) ──────────────────────────────────────────────────
   void _paintJourney(Canvas canvas, Size size) {
     _paintBackground(canvas, size,
-        from: const Color(0xFF1A1510), to: const Color(0xFF2A1F14));
+        from: const Color(0xFFF4EEFF), to: const Color(0xFFFFF2F8));
 
     final w = size.width;
     final h = size.height;
@@ -134,7 +134,7 @@ class _HeroArtPainter extends CustomPainter {
   // ─── On This Day ─────────────────────────────────────────────────────────
   void _paintOnThisDay(Canvas canvas, Size size) {
     _paintBackground(canvas, size,
-        from: const Color(0xFF1A1510), to: const Color(0xFF221810));
+        from: const Color(0xFFFFF1F8), to: const Color(0xFFEAF7FF));
 
     final w = size.width;
     final h = size.height;
@@ -185,7 +185,7 @@ class _HeroArtPainter extends CustomPainter {
   // ─── Chapters ────────────────────────────────────────────────────────────
   void _paintChapters(Canvas canvas, Size size) {
     _paintBackground(canvas, size,
-        from: const Color(0xFF1A1510), to: const Color(0xFF201A12));
+        from: const Color(0xFFEFF4FF), to: const Color(0xFFFFF6EE));
 
     final w = size.width;
     final h = size.height;
@@ -266,7 +266,7 @@ class _HeroArtPainter extends CustomPainter {
   // ─── Replay ──────────────────────────────────────────────────────────────
   void _paintReplay(Canvas canvas, Size size) {
     _paintBackground(canvas, size,
-        from: const Color(0xFF120E0A), to: const Color(0xFF221610));
+        from: const Color(0xFFE9F8FF), to: const Color(0xFFF6EEFF));
 
     final w = size.width;
     final h = size.height;
@@ -335,7 +335,7 @@ class _HeroArtPainter extends CustomPainter {
   // ─── Insights ────────────────────────────────────────────────────────────
   void _paintInsights(Canvas canvas, Size size) {
     _paintBackground(canvas, size,
-        from: const Color(0xFF1A1510), to: const Color(0xFF251C12));
+        from: const Color(0xFFF2EEFF), to: const Color(0xFFE8FFF7));
 
     final w = size.width;
     final h = size.height;
@@ -387,7 +387,7 @@ class _HeroArtPainter extends CustomPainter {
   void _paintGrain(Canvas canvas, Size size, {required int seed}) {
     final rng = math.Random(seed);
     final grainPaint = Paint()
-      ..color = Colors.white.withOpacity(0.025)
+      ..color = const Color(0xFF1E1740).withOpacity(0.025)
       ..style = PaintingStyle.fill;
     for (var i = 0; i < 180; i++) {
       canvas.drawCircle(

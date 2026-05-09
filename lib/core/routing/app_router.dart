@@ -9,6 +9,7 @@ import 'package:life_replay/features/on_this_day/screens/on_this_day_screen.dart
 import 'package:life_replay/features/phases/screens/phases_screen.dart';
 import 'package:life_replay/features/timeline/screens/timeline_screen.dart';
 import 'package:life_replay/shared/widgets/app_bottom_nav.dart';
+import 'package:life_replay/shared/widgets/app_scaffold.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   return GoRouter(
@@ -81,7 +82,7 @@ class AppShell extends StatelessWidget {
     final location = GoRouterState.of(context).uri.path;
     final currentIndex = _locationToIndex(location);
 
-    return Scaffold(
+    return AppScaffold(
       body: PageTransitionSwitcher(
         duration: const Duration(milliseconds: 300),
         transitionBuilder: (child, primaryAnimation, secondaryAnimation) {

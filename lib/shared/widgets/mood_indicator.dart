@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:life_replay/core/theme/context_theme.dart';
 
 class MoodIndicator extends StatelessWidget {
   final int mood;
@@ -25,7 +26,7 @@ class MoodIndicator extends StatelessWidget {
       case 5:
         return const Color(0xFF58A6FF);
       default:
-        return Theme.of(context).colorScheme.onSurfaceVariant;
+        return context.appColors.onSurfaceVariant;
     }
   }
 

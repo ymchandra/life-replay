@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:iconsax/iconsax.dart';
 import 'package:intl/intl.dart';
 import 'package:life_replay/core/models/life_event.dart';
 import 'package:life_replay/core/providers/database_provider.dart';
+import 'package:life_replay/core/theme/context_theme.dart';
 import 'package:life_replay/core/utils/date_utils.dart' as app_date_utils;
+import 'package:life_replay/shared/widgets/app_scaffold.dart';
 import 'package:life_replay/shared/widgets/empty_state.dart';
 import 'package:life_replay/shared/widgets/glassmorphism_card.dart';
 import 'package:life_replay/shared/widgets/mood_indicator.dart';
@@ -23,18 +26,15 @@ class OnThisDayScreen extends ConsumerWidget {
     final now = DateTime.now();
     final eventsAsync = ref.watch(_onThisDayProvider);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('On This Day  ·  ${DateFormat('MMMM d').format(now)}'),
-        centerTitle: false,
-      ),
+    return AppScaffold(
+      title: 'On This Day  ·  ${DateFormat('MMMM d').format(now)}',
       body: eventsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('Error: $e')),
         data: (events) {
           if (events.isEmpty) {
             return const EmptyState(
-              icon: Icons.calendar_today_outlined,
+              icon: Iconsax.calendar,
               title: 'No memories on this day',
               subtitle: 'Add memories and they\'ll appear here on the same date next year.',
             );
@@ -84,7 +84,7 @@ class _PatternCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
+    final cs = context.appColors;
     return GlassmorphismCard(
       borderColor: cs.secondary.withOpacity(0.3),
       child: Row(
@@ -94,7 +94,7 @@ class _PatternCard extends StatelessWidget {
           Expanded(
             child: Text(
               _buildInsight(events),
-              style: Theme.of(context).textTheme.bodyMedium,
+              style: context.appText.bodyMedium,
             ),
           ),
         ],
@@ -118,7 +118,7 @@ class _YearSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
+    final cs = context.appColors;
     final label = yearsAgo == 0 ? 'This year' : '$yearsAgo year${yearsAgo > 1 ? 's' : ''} ago';
 
     return Column(
@@ -137,7 +137,7 @@ class _YearSection extends StatelessWidget {
                 ),
                 child: Text(
                   '$year  ·  $label',
-                  style: Theme.of(context).textTheme.labelMedium?.copyWith(color: cs.primary),
+                  style: context.appText.labelMedium?.copyWith(color: cs.primary),
                 ),
               ),
             ],
@@ -158,12 +158,12 @@ class _YearSection extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(event.title, style: Theme.of(context).textTheme.titleSmall),
+                        Text(event.title, style: context.appText.titleSmall),
                         if (event.content.isNotEmpty) ...[
                           const SizedBox(height: 4),
                           Text(
                             event.content,
-                            style: Theme.of(context).textTheme.bodySmall,
+                            style: context.appText.bodySmall,
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -171,7 +171,7 @@ class _YearSection extends StatelessWidget {
                         const SizedBox(height: 4),
                         Text(
                           DateFormat('h:mm a').format(event.timestamp),
-                          style: Theme.of(context).textTheme.labelSmall,
+                          style: context.appText.labelSmall,
                         ),
                       ],
                     ),

@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:life_replay/core/database/database_helper.dart';
 import 'package:life_replay/core/providers/database_provider.dart';
 import 'package:life_replay/core/providers/events_provider.dart';
+import 'package:life_replay/core/theme/context_theme.dart';
 import 'package:life_replay/core/utils/date_utils.dart' as app_date_utils;
-import 'package:life_replay/features/quick_capture/widgets/quick_capture_sheet.dart';
-import 'package:life_replay/features/timeline/widgets/event_card.dart';
+import 'package:life_replay/features/timeline/widgets/event_tile.dart';
 import 'package:life_replay/features/timeline/widgets/timeline_header.dart';
+import 'package:life_replay/shared/widgets/app_scaffold.dart';
 import 'package:life_replay/shared/widgets/empty_state.dart';
 
 class TimelineScreen extends ConsumerStatefulWidget {
@@ -34,17 +36,8 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen> {
     }
   }
 
-  void _openQuickCapture() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => QuickCaptureSheet(
-        onSaved: () {
-          ref.read(eventsProvider.notifier).loadEvents();
-        },
-      ),
-    );
+  void _openEventEditor() {
+    context.push('/event/new');
   }
 
   @override
@@ -53,17 +46,14 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen> {
     final zoom = ref.watch(timelineZoomProvider);
     final db = ref.read(databaseProvider);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Life Replay'),
-        centerTitle: false,
-        actions: [
-          IconButton(
-            icon: const Icon(Iconsax.search_normal),
-            onPressed: () {},
-          ),
-        ],
-      ),
+    return AppScaffold(
+      title: 'Life Replay',
+      actions: [
+        IconButton(
+          icon: const Icon(Iconsax.search_normal),
+          onPressed: () {},
+        ),
+      ],
       body: Column(
         children: [
           _ZoomSelector(zoom: zoom),
@@ -74,7 +64,7 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen> {
               data: (events) {
                 if (events.isEmpty) {
                   return const EmptyState(
-                    icon: Icons.timeline_outlined,
+                    icon: Iconsax.clock,
                     title: 'No memories yet',
                     subtitle: 'Tap + to capture your first memory',
                   );
@@ -86,44 +76,55 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen> {
 
                 return RefreshIndicator(
                   onRefresh: () => ref.read(eventsProvider.notifier).loadEvents(),
-                  child: ListView.builder(
-                    padding: const EdgeInsets.only(bottom: 80),
-                    itemCount: sortedDates.length,
-                    itemBuilder: (context, idx) {
-                      final date = sortedDates[idx];
-                      final dayEvents = grouped[date]!;
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          TimelineHeader(date: date, eventCount: dayEvents.length),
-                          ...dayEvents.asMap().entries.map((entry) {
-                            final event = entry.value;
-                            return Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                _TimelineConnector(
-                                  isFirst: entry.key == 0 && idx == 0,
-                                  isLast: entry.key == dayEvents.length - 1 &&
-                                      idx == sortedDates.length - 1,
-                                ),
-                                Expanded(
-                                  child: EventCard(
-                                    event: event,
-                                    tags: _tagCache[event.id] ?? [],
-                                    animationIndex: idx * 3 + entry.key,
-                                    onTap: () {
-                                      if (event.id != null) {
-                                        context.push('/event/${event.id}');
-                                      }
-                                    },
+                  child: CustomScrollView(
+                    slivers: [
+                      SliverPadding(
+                        padding: const EdgeInsets.only(bottom: 96),
+                        sliver: SliverList(
+                          delegate: SliverChildBuilderDelegate(
+                            (context, idx) {
+                              final date = sortedDates[idx];
+                              final dayEvents = grouped[date]!;
+                              int globalOffset = sortedDates
+                                  .take(idx)
+                                  .fold(0, (acc, d) => acc + (grouped[d]?.length ?? 0));
+
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  TimelineHeader(date: date, eventCount: dayEvents.length),
+                                  Padding(
+                                    padding: const EdgeInsets.fromLTRB(12, 4, 12, 8),
+                                    child: MasonryGridView.count(
+                                      crossAxisCount: 2,
+                                      mainAxisSpacing: 10,
+                                      crossAxisSpacing: 10,
+                                      shrinkWrap: true,
+                                      physics: const NeverScrollableScrollPhysics(),
+                                      itemCount: dayEvents.length,
+                                      itemBuilder: (context, i) {
+                                        final event = dayEvents[i];
+                                        return EventTile(
+                                          event: event,
+                                          tags: _tagCache[event.id] ?? [],
+                                          animationIndex: globalOffset + i,
+                                          onTap: () {
+                                            if (event.id != null) {
+                                              context.push('/event/${event.id}');
+                                            }
+                                          },
+                                        );
+                                      },
+                                    ),
                                   ),
-                                ),
-                              ],
-                            );
-                          }),
-                        ],
-                      );
-                    },
+                                ],
+                              );
+                            },
+                            childCount: sortedDates.length,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 );
               },
@@ -133,7 +134,7 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         heroTag: 'timeline_add_event_fab',
-        onPressed: _openQuickCapture,
+        onPressed: _openEventEditor,
         child: const Icon(Iconsax.add),
       ),
     );
@@ -164,41 +165,6 @@ class _ZoomSelector extends ConsumerWidget {
         style: const ButtonStyle(
           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
         ),
-      ),
-    );
-  }
-}
-
-class _TimelineConnector extends StatelessWidget {
-  final bool isFirst;
-  final bool isLast;
-
-  const _TimelineConnector({required this.isFirst, required this.isLast});
-
-  @override
-  Widget build(BuildContext context) {
-    final color = Theme.of(context).colorScheme.primary.withOpacity(0.25);
-    return SizedBox(
-      width: 32,
-      child: Column(
-        children: [
-          if (!isFirst)
-            Container(width: 1, height: 8, color: color)
-          else
-            const SizedBox(height: 8),
-          Container(
-            width: 7,
-            height: 7,
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primary.withOpacity(0.7),
-              shape: BoxShape.circle,
-            ),
-          ),
-          if (!isLast)
-            Container(width: 1, height: 80, color: color)
-          else
-            const SizedBox(height: 8),
-        ],
       ),
     );
   }

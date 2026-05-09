@@ -1,11 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Life Replay icon foreground — redesigned.
-  Design: three timeline dots connected by a horizontal bar, a short
-  vertical connector, and a right-pointing play triangle.
-  All elements are centred and kept within the safe zone (x 18–90, y 18–90).
-  White on transparent — the background drawable shows through.
-  Viewport 108×108 dp.
+  Life Replay icon foreground.
+  Design: orbit rings + memory dots + central sparkle (no play button).
+  Vivid glyph over a light gradient background.
 -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
@@ -13,36 +10,39 @@
     android:viewportWidth="108"
     android:viewportHeight="108">
 
-    <!-- Horizontal timeline bar (y centre=37, height=4, x 34→74) -->
     <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M34,35 L74,35 L74,39 L34,39 Z"/>
+        android:fillColor="#00FFFFFF"
+        android:pathData="M54,20 A34,34 0 1 1 28,76"
+        android:strokeColor="#FF5C40E8"
+        android:strokeLineCap="round"
+        android:strokeWidth="8" />
 
-    <!-- Left dot — circle centred at (34,37) r=6 -->
     <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M34,31 A6,6 0 1 0 34,43 A6,6 0 1 0 34,31 Z"/>
+        android:fillColor="#00FFFFFF"
+        android:pathData="M70,42 A16,16 0 1 1 54,74"
+        android:strokeColor="#E6A036F0"
+        android:strokeLineCap="round"
+        android:strokeWidth="5" />
 
-    <!-- Centre dot — circle centred at (54,37) r=6 -->
     <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M54,31 A6,6 0 1 0 54,43 A6,6 0 1 0 54,31 Z"/>
+        android:fillColor="#FF5C40E8"
+        android:pathData="M25,46 A5,5 0 1 0 25,56 A5,5 0 1 0 25,46 Z" />
 
-    <!-- Right dot — circle centred at (74,37) r=6 -->
     <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M74,31 A6,6 0 1 0 74,43 A6,6 0 1 0 74,31 Z"/>
+        android:fillColor="#FF5C40E8"
+        android:pathData="M72,22 A5,5 0 1 0 72,32 A5,5 0 1 0 72,22 Z" />
 
-    <!-- Vertical connector from centre dot (y=43) to play triangle (y=61), width=4 -->
     <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M52,43 L56,43 L56,61 L52,61 Z"/>
+        android:fillColor="#FF5C40E8"
+        android:pathData="M74,72 A5,5 0 1 0 74,82 A5,5 0 1 0 74,72 Z" />
 
-    <!-- Play triangle — right-pointing, centred at (54,72)
-         Vertices: left-top (40,62) · left-bottom (40,82) · right tip (68,72) -->
     <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M40,62 L40,82 L68,72 Z"/>
+        android:fillColor="#FF5C40E8"
+        android:pathData="M54,40 L58,50 L68,54 L58,58 L54,68 L50,58 L40,54 L50,50 Z" />
+
+    <path
+        android:fillColor="#FFFF4E88"
+        android:pathData="M70,38 L72,43 L77,45 L72,47 L70,52 L68,47 L63,45 L68,43 Z" />
 
 </vector>
 

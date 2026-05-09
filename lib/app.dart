@@ -11,7 +11,7 @@ class MyApp extends ConsumerWidget {
     final router = ref.watch(appRouterProvider);
     return MaterialApp.router(
       title: 'Life Replay',
-      theme: AppTheme.darkTheme,
+      theme: AppTheme.lightTheme,
       routerConfig: router,
       debugShowCheckedModeBanner: false,
     );

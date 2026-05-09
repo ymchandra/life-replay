@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:life_replay/core/theme/app_theme.dart';
+import 'package:life_replay/core/theme/context_theme.dart';
 
 class EmptyState extends StatelessWidget {
   final IconData? icon;
@@ -21,7 +22,7 @@ class EmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
+    final cs = context.appColors;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
@@ -55,7 +56,7 @@ class EmptyState extends StatelessWidget {
             const SizedBox(height: 20),
             Text(
               title,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              style: context.appText.titleMedium?.copyWith(
                     color: cs.onSurface,
                   ),
               textAlign: TextAlign.center,
@@ -63,7 +64,7 @@ class EmptyState extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               subtitle,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              style: context.appText.bodyMedium?.copyWith(
                     color: cs.onSurfaceVariant,
                   ),
               textAlign: TextAlign.center,

@@ -16,7 +16,7 @@
 - Features are vertical slices under `lib/features/<feature>/{screens,widgets}`; reusable UI lives in `lib/shared/widgets`.
 
 ## Data flow and cross-component contracts
-- Typical write flow: UI (`EventEditorScreen` / `QuickCaptureSheet`) -> `eventsProvider` -> `DatabaseHelper`.
+- Typical write flow: UI (`EventEditorScreen`) -> `eventsProvider` -> `DatabaseHelper`.
 - After add/update/delete, `EventsNotifier` always runs `detectAndSavePhases()` and reloads events (`lib/core/providers/events_provider.dart`).
 - Phase generation logic is keyword/week-threshold based in `lib/core/utils/phase_detector.dart`; changing thresholds affects `PhasesScreen` output.
 - Tags are normalized to lowercase+trimmed in DB writes (`setTagsForEvent`), so keep tag UI/analytics compatible with normalized values.

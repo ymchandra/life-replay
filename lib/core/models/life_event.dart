@@ -7,6 +7,7 @@ class LifeEvent {
   final String? photoPath;
   final double? latitude;
   final double? longitude;
+  final String? locationName;
   final int? phaseId;
 
   const LifeEvent({
@@ -18,6 +19,7 @@ class LifeEvent {
     this.photoPath,
     this.latitude,
     this.longitude,
+    this.locationName,
     this.phaseId,
   });
 
@@ -31,6 +33,7 @@ class LifeEvent {
       'photo_path': photoPath,
       'latitude': latitude,
       'longitude': longitude,
+      'location_name': locationName,
       'phase_id': phaseId,
     };
   }
@@ -45,6 +48,7 @@ class LifeEvent {
       photoPath: map['photo_path'] as String?,
       latitude: map['latitude'] as double?,
       longitude: map['longitude'] as double?,
+      locationName: map['location_name'] as String?,
       phaseId: map['phase_id'] as int?,
     );
   }
@@ -58,6 +62,7 @@ class LifeEvent {
     String? photoPath,
     double? latitude,
     double? longitude,
+    String? locationName,
     int? phaseId,
   }) {
     return LifeEvent(
@@ -69,6 +74,7 @@ class LifeEvent {
       photoPath: photoPath ?? this.photoPath,
       latitude: latitude ?? this.latitude,
       longitude: longitude ?? this.longitude,
+      locationName: locationName ?? this.locationName,
       phaseId: phaseId ?? this.phaseId,
     );
   }

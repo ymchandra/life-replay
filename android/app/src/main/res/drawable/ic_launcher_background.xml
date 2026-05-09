@@ -1,15 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-  Life Replay launcher icon background.
-  Warm diagonal gradient from deep mahogany (top-left) to amber (bottom-right),
-  evoking the feel of aged memories and warmth.
--->
+<!-- Light vibrant diagonal gradient for adaptive launcher icon background. -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="rectangle">
     <gradient
-        android:startColor="#6B2B0E"
-        android:centerColor="#A05C30"
-        android:endColor="#C8956B"
+        android:startColor="#EEE8FF"
+        android:centerColor="#D8F1FF"
+        android:endColor="#FFD9E7"
         android:type="linear"
-        android:angle="135"/>
+        android:angle="135" />
 </shape>

@@ -19,7 +19,12 @@ class DatabaseHelper {
   Future<Database> _initDatabase() async {
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, 'life_replay.db');
-    return await openDatabase(path, version: 1, onCreate: _createDatabase);
+    return await openDatabase(
+      path,
+      version: 2,
+      onCreate: _createDatabase,
+      onUpgrade: _upgradeDatabase,
+    );
   }
 
   Future<void> _createDatabase(Database db, int version) async {
@@ -33,6 +38,7 @@ class DatabaseHelper {
         photo_path TEXT,
         latitude REAL,
         longitude REAL,
+        location_name TEXT,
         phase_id INTEGER
       )
     ''');
@@ -59,6 +65,93 @@ class DatabaseHelper {
 
     await db.execute('CREATE INDEX idx_events_timestamp ON life_events (timestamp)');
     await db.execute('CREATE INDEX idx_tags_event_id ON event_tags (event_id)');
+  }
+
+  Future<void> _upgradeDatabase(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      // Add location_name column for version upgrade
+      await db.execute('''
+        ALTER TABLE life_events ADD COLUMN location_name TEXT
+      ''');
+    }
+  }
+
+  Future<void> seedSampleDataIfEmpty() async {
+    final db = await database;
+    final existing = Sqflite.firstIntValue(
+      await db.rawQuery('SELECT COUNT(*) FROM life_events'),
+    );
+    if ((existing ?? 0) > 0) return;
+
+    final now = DateTime.now();
+    final seeds = <({LifeEvent event, List<String> tags})>[
+      (
+        event: LifeEvent(
+          title: 'Morning sprint planning',
+          content:
+              'Aligned priorities for this week and set clear delivery goals with the team.',
+          mood: 4,
+          timestamp: now.subtract(const Duration(days: 9, hours: 2)),
+        ),
+        tags: ['work', 'planning', 'team']
+      ),
+      (
+        event: LifeEvent(
+          title: 'Evening walk in the park',
+          content:
+              'Slow walk after work. Felt calm and reset after a busy day.',
+          mood: 5,
+          timestamp: now.subtract(const Duration(days: 8, hours: 6)),
+        ),
+        tags: ['health', 'recovery']
+      ),
+      (
+        event: LifeEvent(
+          title: 'Deep focus coding session',
+          content:
+              'Implemented a tricky feature and wrote tests. Good progress, but a little tired.',
+          mood: 4,
+          timestamp: now.subtract(const Duration(days: 6, hours: 4)),
+        ),
+        tags: ['work', 'build', 'focus']
+      ),
+      (
+        event: LifeEvent(
+          title: 'Coffee with a close friend',
+          content:
+              'Great conversation about goals and travel plans. Felt energised afterwards.',
+          mood: 5,
+          timestamp: now.subtract(const Duration(days: 4, hours: 3)),
+        ),
+        tags: ['social', 'friend']
+      ),
+      (
+        event: LifeEvent(
+          title: 'Unexpected production issue',
+          content:
+              'Spent late hours fixing a regression. Stressful, but finally resolved.',
+          mood: 2,
+          timestamp: now.subtract(const Duration(days: 2, hours: 8)),
+        ),
+        tags: ['work', 'incident']
+      ),
+      (
+        event: LifeEvent(
+          title: 'Quiet reflection before bed',
+          content:
+              'Wrote a journal note and planned a slower day tomorrow. Feeling balanced.',
+          mood: 4,
+          timestamp: now.subtract(const Duration(days: 1, hours: 1)),
+        ),
+        tags: ['journal', 'recovery']
+      ),
+    ];
+
+    for (final seed in seeds) {
+      final id = await insertEvent(seed.event);
+      await setTagsForEvent(id, seed.tags);
+    }
+    await detectAndSavePhases();
   }
 
   // ── Events ──────────────────────────────────────────────────────────────────

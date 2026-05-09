@@ -7,6 +7,8 @@ import 'package:life_replay/core/models/life_event.dart';
 import 'package:life_replay/core/models/life_phase.dart';
 import 'package:life_replay/core/providers/database_provider.dart';
 import 'package:life_replay/core/providers/phases_provider.dart';
+import 'package:life_replay/core/theme/context_theme.dart';
+import 'package:life_replay/shared/widgets/app_scaffold.dart';
 import 'package:life_replay/shared/widgets/empty_state.dart';
 import 'package:life_replay/shared/widgets/glassmorphism_card.dart';
 
@@ -17,24 +19,21 @@ class PhasesScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final phasesAsync = ref.watch(phasesProvider);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Chapters'),
-        centerTitle: false,
-        actions: [
-          IconButton(
-            icon: const Icon(Iconsax.refresh),
-            onPressed: () => ref.read(phasesProvider.notifier).loadPhases(),
-          ),
-        ],
-      ),
+    return AppScaffold(
+      title: 'Chapters',
+      actions: [
+        IconButton(
+          icon: const Icon(Iconsax.refresh),
+          onPressed: () => ref.read(phasesProvider.notifier).loadPhases(),
+        ),
+      ],
       body: phasesAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('Error: $e')),
         data: (phases) {
           if (phases.isEmpty) {
             return const EmptyState(
-              icon: Icons.menu_book_outlined,
+              icon: Iconsax.book,
               title: 'No chapters yet',
               subtitle:
                   'Add more memories and life chapters will be automatically detected based on your activity patterns.',
@@ -65,7 +64,7 @@ class _PhaseCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final cs = Theme.of(context).colorScheme;
+    final cs = context.appColors;
     final db = ref.read(databaseProvider);
 
     return Padding(
@@ -85,12 +84,12 @@ class _PhaseCard extends ConsumerWidget {
               child: Text(phase.emoji, style: const TextStyle(fontSize: 22)),
             ),
           ),
-          title: Text(phase.name, style: Theme.of(context).textTheme.titleSmall),
+          title: Text(phase.name, style: context.appText.titleSmall),
           subtitle: Padding(
             padding: const EdgeInsets.only(top: 4),
             child: Text(
               '${DateFormat('MMM d, yyyy').format(phase.startDate)} – ${DateFormat('MMM d, yyyy').format(phase.endDate)}',
-              style: Theme.of(context).textTheme.labelSmall,
+              style: context.appText.labelSmall,
             ),
           ),
           trailing: Container(
@@ -115,7 +114,7 @@ class _PhaseCard extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Divider(),
-                  Text(phase.description, style: Theme.of(context).textTheme.bodySmall),
+                  Text(phase.description, style: context.appText.bodySmall),
                   const SizedBox(height: 12),
                   FutureBuilder<List<LifeEvent>>(
                     future: db.getEventsByDateRange(phase.startDate, phase.endDate),
@@ -127,19 +126,23 @@ class _PhaseCard extends ConsumerWidget {
                         children: [
                           Text(
                             '${events.length} events in this phase',
-                            style: Theme.of(context).textTheme.labelMedium?.copyWith(color: cs.primary),
+                            style: context.appText.labelMedium?.copyWith(color: cs.primary),
                           ),
                           const SizedBox(height: 8),
                           ...events.take(3).map((e) => Padding(
                                 padding: const EdgeInsets.only(bottom: 4),
                                 child: Row(
                                   children: [
-                                    const Icon(Iconsax.record, size: 10, color: Colors.white38),
+                                    Icon(
+                                      Iconsax.record,
+                                      size: 10,
+                                      color: context.appColors.onSurfaceVariant,
+                                    ),
                                     const SizedBox(width: 8),
                                     Expanded(
                                       child: Text(
                                         e.title,
-                                        style: Theme.of(context).textTheme.bodySmall,
+                                        style: context.appText.bodySmall,
                                         overflow: TextOverflow.ellipsis,
                                       ),
                                     ),
@@ -149,7 +152,7 @@ class _PhaseCard extends ConsumerWidget {
                           if (events.length > 3)
                             Text(
                               '+ ${events.length - 3} more',
-                              style: Theme.of(context).textTheme.labelSmall,
+                              style: context.appText.labelSmall,
                             ),
                         ],
                       );

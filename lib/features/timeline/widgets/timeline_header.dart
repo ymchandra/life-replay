@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:life_replay/core/theme/context_theme.dart';
 import 'package:life_replay/core/utils/date_utils.dart' as app_date_utils;
 
 class TimelineHeader extends StatelessWidget {
@@ -9,7 +10,7 @@ class TimelineHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
+    final cs = context.appColors;
     final label = app_date_utils.formatDateHeader(date, 'day');
     final isToday = label == 'Today';
 
@@ -25,8 +26,8 @@ class TimelineHeader extends StatelessWidget {
             ),
             child: Text(
               label,
-              style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                    color: isToday ? Colors.white : cs.onSurfaceVariant,
+                style: context.appText.labelMedium?.copyWith(
+                    color: isToday ? cs.onPrimary : cs.onSurfaceVariant,
                     fontWeight: isToday ? FontWeight.w600 : FontWeight.normal,
                   ),
             ),
@@ -34,7 +35,7 @@ class TimelineHeader extends StatelessWidget {
           const SizedBox(width: 8),
           Text(
             '$eventCount event${eventCount > 1 ? 's' : ''}',
-            style: Theme.of(context).textTheme.labelSmall,
+            style: context.appText.labelSmall,
           ),
         ],
       ),

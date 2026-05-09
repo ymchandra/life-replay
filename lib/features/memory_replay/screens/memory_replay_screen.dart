@@ -5,6 +5,8 @@ import 'package:iconsax/iconsax.dart';
 import 'package:intl/intl.dart';
 import 'package:life_replay/core/models/life_event.dart';
 import 'package:life_replay/core/providers/database_provider.dart';
+import 'package:life_replay/core/theme/context_theme.dart';
+import 'package:life_replay/shared/widgets/app_scaffold.dart';
 import 'package:life_replay/shared/widgets/glassmorphism_card.dart';
 import 'package:life_replay/shared/widgets/mood_indicator.dart';
 import 'package:life_replay/shared/widgets/warm_hero_art.dart';
@@ -85,9 +87,9 @@ class _MemoryReplayScreenState extends ConsumerState<MemoryReplayScreen> {
       );
     }
 
-    final cs = Theme.of(context).colorScheme;
-    return Scaffold(
-      appBar: AppBar(title: const Text('Memory Replay'), centerTitle: false),
+    final cs = context.appColors;
+    return AppScaffold(
+      title: 'Memory Replay',
       body: Padding(
         padding: const EdgeInsets.all(24),
         child: Column(
@@ -97,12 +99,12 @@ class _MemoryReplayScreenState extends ConsumerState<MemoryReplayScreen> {
             const SizedBox(height: 24),
             Text(
               'Reconstruct a period of your life',
-              style: Theme.of(context).textTheme.headlineSmall,
+              style: context.appText.headlineSmall,
             ),
             const SizedBox(height: 8),
             Text(
               'Select a time range to replay your memories like a movie, one event at a time.',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              style: context.appText.bodyMedium?.copyWith(
                     color: cs.onSurfaceVariant,
                   ),
             ),
@@ -121,11 +123,11 @@ class _MemoryReplayScreenState extends ConsumerState<MemoryReplayScreen> {
                 ),
                 title: Text(
                   '${DateFormat('MMM d, yyyy').format(_startDate)} → ${DateFormat('MMM d, yyyy').format(_endDate)}',
-                  style: Theme.of(context).textTheme.titleSmall,
+                  style: context.appText.titleSmall,
                 ),
                 subtitle: Text(
                   '${_endDate.difference(_startDate).inDays} days',
-                  style: Theme.of(context).textTheme.labelSmall,
+                  style: context.appText.labelSmall,
                 ),
                 trailing: const Icon(Iconsax.edit, size: 18),
                 onTap: _pickDateRange,
@@ -148,7 +150,7 @@ class _MemoryReplayScreenState extends ConsumerState<MemoryReplayScreen> {
               child: Text(
                 'Your memories will be replayed\nin chronological order',
                 textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.white38, fontSize: 13),
+                style: TextStyle(color: cs.onSurfaceVariant, fontSize: 13),
               ).animate(delay: 300.ms).fadeIn(duration: 400.ms),
             ),
             const SizedBox(height: 16),
@@ -176,9 +178,9 @@ class _ReplayView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return Scaffold(
-      backgroundColor: Colors.black,
+    final cs = context.appColors;
+    return AppScaffold(
+      backgroundColor: cs.background,
       body: SafeArea(
         bottom: false,
         child: Column(
@@ -189,13 +191,13 @@ class _ReplayView extends StatelessWidget {
               child: Row(
                 children: [
                   IconButton(
-                    icon: const Icon(Iconsax.close_circle, color: Colors.white70),
+                    icon: Icon(Iconsax.close_circle, color: cs.onSurfaceVariant),
                     onPressed: onClose,
                   ),
                   Expanded(
                     child: LinearProgressIndicator(
                       value: events.isEmpty ? 0 : (currentPage + 1) / events.length,
-                      backgroundColor: Colors.white12,
+                      backgroundColor: cs.surfaceVariant,
                       valueColor: AlwaysStoppedAnimation<Color>(cs.primary),
                       borderRadius: BorderRadius.circular(4),
                     ),
@@ -203,7 +205,7 @@ class _ReplayView extends StatelessWidget {
                   const SizedBox(width: 8),
                   Text(
                     '${currentPage + 1} / ${events.length}',
-                    style: const TextStyle(color: Colors.white54, fontSize: 12),
+                    style: TextStyle(color: cs.onSurfaceVariant, fontSize: 12),
                   ),
                 ],
               ),
@@ -241,7 +243,7 @@ class _ReplayView extends StatelessWidget {
                     ),
                     Text(
                       DateFormat('MMMM d, yyyy').format(events[currentPage].timestamp),
-                      style: const TextStyle(color: Colors.white60, fontSize: 13),
+                      style: TextStyle(color: cs.onSurfaceVariant, fontSize: 13),
                     ),
                     _NavButton(
                       icon: Iconsax.arrow_right,
@@ -277,6 +279,7 @@ class _NavButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = context.appColors;
     return AnimatedOpacity(
       duration: const Duration(milliseconds: 200),
       opacity: enabled ? 1.0 : 0.3,
@@ -286,11 +289,11 @@ class _NavButton extends StatelessWidget {
           width: 48,
           height: 48,
           decoration: BoxDecoration(
-            color: Colors.white12,
+            color: cs.surfaceVariant,
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: Colors.white24),
+            border: Border.all(color: cs.outlineVariant),
           ),
-          child: Icon(icon, color: Colors.white, size: 22),
+          child: Icon(icon, color: cs.onSurface, size: 22),
         ),
       ),
     );
@@ -304,6 +307,7 @@ class _EventPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = context.appColors;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Column(
@@ -315,8 +319,8 @@ class _EventPage extends StatelessWidget {
           const SizedBox(height: 24),
           Text(
             event.title,
-            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                  color: Colors.white,
+            style: context.appText.headlineMedium?.copyWith(
+                  color: cs.onBackground,
                   fontWeight: FontWeight.w700,
                   height: 1.2,
                 ),
@@ -329,8 +333,8 @@ class _EventPage extends StatelessWidget {
             const SizedBox(height: 20),
             Text(
               event.content,
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: Colors.white70,
+              style: context.appText.bodyLarge?.copyWith(
+                    color: cs.onSurfaceVariant,
                     height: 1.7,
                   ),
               textAlign: TextAlign.center,
@@ -339,7 +343,7 @@ class _EventPage extends StatelessWidget {
           const SizedBox(height: 32),
           Text(
             DateFormat('EEEE, MMMM d, yyyy  ·  h:mm a').format(event.timestamp),
-            style: const TextStyle(color: Colors.white38, fontSize: 12, letterSpacing: 0.4),
+            style: TextStyle(color: cs.onSurfaceVariant, fontSize: 12, letterSpacing: 0.4),
           ).animate(delay: 320.ms).fadeIn(duration: 400.ms),
         ],
       ),

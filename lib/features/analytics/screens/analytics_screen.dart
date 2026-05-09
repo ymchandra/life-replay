@@ -5,6 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:life_replay/core/providers/database_provider.dart';
 import 'package:life_replay/core/theme/app_theme.dart';
+import 'package:life_replay/core/theme/context_theme.dart';
+import 'package:life_replay/shared/widgets/app_scaffold.dart';
 import 'package:life_replay/shared/widgets/glassmorphism_card.dart';
 import 'package:life_replay/shared/widgets/warm_hero_art.dart';
 
@@ -33,8 +35,8 @@ class AnalyticsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Insights'), centerTitle: false),
+    return AppScaffold(
+      title: 'Insights',
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -86,7 +88,7 @@ class _SectionTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
+    final cs = context.appColors;
     return Row(
       children: [
         Container(
@@ -98,7 +100,7 @@ class _SectionTitle extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 8),
-        Text(title, style: Theme.of(context).textTheme.titleMedium),
+        Text(title, style: context.appText.titleMedium),
       ],
     );
   }
@@ -120,7 +122,8 @@ class _MoodTrendChart extends StatelessWidget {
           error: (e, _) => Center(child: Text('Error: $e')),
           data: (data) {
             if (data.isEmpty) {
-              return const Center(child: Text('No mood data yet', style: TextStyle(color: Colors.white38)));
+              final muted = context.appColors.onSurfaceVariant;
+              return Center(child: Text('No mood data yet', style: TextStyle(color: muted)));
             }
             final spots = data.asMap().entries.map((entry) {
               final avgMood = (entry.value['avg_mood'] as num?)?.toDouble() ?? 3.0;
@@ -220,7 +223,10 @@ class _ActivityHeatmap extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  const Text('Less', style: TextStyle(color: Colors.white38, fontSize: 10)),
+                  Text(
+                    'Less',
+                    style: TextStyle(color: context.appColors.onSurfaceVariant, fontSize: 10),
+                  ),
                   const SizedBox(width: 4),
                   ...List.generate(5, (i) => Container(
                         width: 10,
@@ -232,7 +238,10 @@ class _ActivityHeatmap extends StatelessWidget {
                         ),
                       )),
                   const SizedBox(width: 4),
-                  const Text('More', style: TextStyle(color: Colors.white38, fontSize: 10)),
+                  Text(
+                    'More',
+                    style: TextStyle(color: context.appColors.onSurfaceVariant, fontSize: 10),
+                  ),
                 ],
               ),
             ],
@@ -258,7 +267,7 @@ class _TopTagsChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
+    final cs = context.appColors;
     return GlassmorphismCard(
       padding: const EdgeInsets.all(16),
       child: tagsAsync.when(
@@ -266,10 +275,13 @@ class _TopTagsChart extends StatelessWidget {
         error: (e, _) => Center(child: Text('Error: $e')),
         data: (tags) {
           if (tags.isEmpty) {
-            return const Center(
+            return Center(
               child: Padding(
-                padding: EdgeInsets.all(16),
-                child: Text('No tags yet', style: TextStyle(color: Colors.white38)),
+                padding: const EdgeInsets.all(16),
+                child: Text(
+                  'No tags yet',
+                  style: TextStyle(color: context.appColors.onSurfaceVariant),
+                ),
               ),
             );
           }
@@ -286,7 +298,7 @@ class _TopTagsChart extends StatelessWidget {
                       width: 80,
                       child: Text(
                         entry.key,
-                        style: Theme.of(context).textTheme.bodySmall,
+                        style: context.appText.bodySmall,
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
@@ -315,7 +327,7 @@ class _TopTagsChart extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 8),
-                    Text('${entry.value}', style: Theme.of(context).textTheme.labelSmall),
+                    Text('${entry.value}', style: context.appText.labelSmall),
                   ],
                 ),
               );
@@ -334,7 +346,7 @@ class _TimeOfDayWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
+    final cs = context.appColors;
     const timeIcons = {
       'Morning': '🌅',
       'Afternoon': '☀️',
@@ -349,7 +361,12 @@ class _TimeOfDayWidget extends StatelessWidget {
         data: (timeData) {
           final total = timeData.values.fold(0, (a, b) => a + b);
           if (total == 0) {
-            return const Center(child: Text('No data yet', style: TextStyle(color: Colors.white38)));
+            return Center(
+              child: Text(
+                'No data yet',
+                style: TextStyle(color: context.appColors.onSurfaceVariant),
+              ),
+            );
           }
           return Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -360,8 +377,8 @@ class _TimeOfDayWidget extends StatelessWidget {
                   Text(timeIcons[entry.key] ?? '⏰', style: const TextStyle(fontSize: 24)),
                   const SizedBox(height: 8),
                   Text('$pct%',
-                      style: Theme.of(context).textTheme.titleSmall?.copyWith(color: cs.primary)),
-                  Text(entry.key, style: Theme.of(context).textTheme.labelSmall),
+                      style: context.appText.titleSmall?.copyWith(color: cs.primary)),
+                  Text(entry.key, style: context.appText.labelSmall),
                 ],
               );
             }).toList(),

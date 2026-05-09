@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:life_replay/core/theme/context_theme.dart';
 
 /// A warm, matte surface card — replaces the previous glassmorphism/blur card.
 /// Keeps the same API so all existing callers continue to work unchanged.
@@ -21,7 +22,7 @@ class GlassmorphismCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
+    final cs = context.appColors;
     return Container(
       padding: padding ?? const EdgeInsets.all(16),
       decoration: BoxDecoration(

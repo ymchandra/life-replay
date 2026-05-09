@@ -238,6 +238,10 @@ class _EventEditorScreenState extends ConsumerState<EventEditorScreen> {
       fallbackTitle: _originalEvent?.title,
       fallbackMood: _originalEvent?.mood ?? 3,
     );
+    final inferredTags = OnDeviceEventInference.inferTags(
+      content,
+      baseTags: _existingTags,
+    );
 
     final event = LifeEvent(
       id: _originalEvent?.id,
@@ -253,9 +257,9 @@ class _EventEditorScreenState extends ConsumerState<EventEditorScreen> {
 
     try {
       if (_isEditing && _originalEvent != null) {
-        await ref.read(eventsProvider.notifier).updateEvent(event, _existingTags);
+        await ref.read(eventsProvider.notifier).updateEvent(event, inferredTags);
       } else {
-        await ref.read(eventsProvider.notifier).addEvent(event, _existingTags);
+        await ref.read(eventsProvider.notifier).addEvent(event, inferredTags);
       }
       if (mounted) context.pop();
     } catch (e) {

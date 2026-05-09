@@ -46,5 +46,35 @@ void main() {
 
       expect(result.mood, lessThanOrEqualTo(2));
     });
+
+    test('infers tags from domain keywords and content tokens', () {
+      final tags = OnDeviceEventInference.inferTags(
+        'Had a project meeting with the client after a long walk in the park.',
+      );
+
+      expect(tags, contains('work'));
+      expect(tags, contains('health'));
+      expect(tags.any((t) => t == 'project' || t == 'meeting' || t == 'client'), isTrue);
+    });
+
+    test('normalizes and de-duplicates base tags', () {
+      final tags = OnDeviceEventInference.inferTags(
+        'Quick journal reflection before sleep.',
+        baseTags: const [' Work ', 'work', 'Travel'],
+      );
+
+      expect(tags.where((t) => t == 'work').length, 1);
+      expect(tags, contains('travel'));
+      expect(tags, contains('journal'));
+    });
+
+    test('returns base tags when content is empty', () {
+      final tags = OnDeviceEventInference.inferTags(
+        '   ',
+        baseTags: const ['Work', 'focus'],
+      );
+
+      expect(tags, equals(['work', 'focus']));
+    });
   });
 }

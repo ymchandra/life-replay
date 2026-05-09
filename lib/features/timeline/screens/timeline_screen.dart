@@ -8,6 +8,7 @@ import 'package:life_replay/core/database/database_helper.dart';
 import 'package:life_replay/core/models/life_event.dart';
 import 'package:life_replay/core/providers/database_provider.dart';
 import 'package:life_replay/core/providers/events_provider.dart';
+import 'package:life_replay/core/services/gallery_memory_sync_service.dart';
 import 'package:life_replay/core/utils/date_utils.dart' as app_date_utils;
 import 'package:life_replay/features/timeline/widgets/grid_timeline_view.dart';
 import 'package:life_replay/features/timeline/widgets/linear_timeline_view.dart';
@@ -27,9 +28,52 @@ class TimelineScreen extends ConsumerStatefulWidget {
   ConsumerState<TimelineScreen> createState() => _TimelineScreenState();
 }
 
-class _TimelineScreenState extends ConsumerState<TimelineScreen> {
+class _TimelineScreenState extends ConsumerState<TimelineScreen>
+    with WidgetsBindingObserver {
   final Map<int, List<String>> _tagCache = {};
   double _headerScrollOffset = 0;
+  bool _syncingGallery = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _syncGalleryMemories();
+    });
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _syncGalleryMemories();
+    }
+  }
+
+  Future<void> _syncGalleryMemories() async {
+    if (_syncingGallery) return;
+    _syncingGallery = true;
+    try {
+      final db = ref.read(databaseProvider);
+      final imported = await GalleryMemorySyncService.syncFromDevicePhotos(db);
+      if (imported > 0) {
+        await ref.read(eventsProvider.notifier).loadEvents();
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('$imported photo ${imported == 1 ? 'memory' : 'memories'} imported from gallery')),
+          );
+        }
+      }
+    } finally {
+      _syncingGallery = false;
+    }
+  }
 
   bool _handleScrollNotification(ScrollNotification notification) {
     if (notification.metrics.axis != Axis.vertical) return false;

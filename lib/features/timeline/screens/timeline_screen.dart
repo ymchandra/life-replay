@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:life_replay/core/models/life_event.dart';
 import 'package:life_replay/core/database/database_helper.dart';
 import 'package:life_replay/core/providers/database_provider.dart';
 import 'package:life_replay/core/providers/events_provider.dart';
@@ -25,6 +26,33 @@ class TimelineScreen extends ConsumerStatefulWidget {
 
 class _TimelineScreenState extends ConsumerState<TimelineScreen> {
   final Map<int, List<String>> _tagCache = {};
+
+  String _timeGreeting() {
+    final h = DateTime.now().hour;
+    if (h < 12) return 'Good morning';
+    if (h < 17) return 'Good afternoon';
+    return 'Good evening';
+  }
+
+  int _consecutiveStreak(List<LifeEvent> events) {
+    if (events.isEmpty) return 0;
+    final uniqueDays = events
+        .map((e) => DateTime(e.timestamp.year, e.timestamp.month, e.timestamp.day))
+        .toSet()
+        .toList()
+      ..sort((a, b) => b.compareTo(a));
+
+    var streak = 1;
+    for (var i = 1; i < uniqueDays.length; i++) {
+      final diff = uniqueDays[i - 1].difference(uniqueDays[i]).inDays;
+      if (diff == 1) {
+        streak++;
+      } else {
+        break;
+      }
+    }
+    return streak;
+  }
 
   Future<void> _loadTagsForEvents(List<dynamic> events, DatabaseHelper db) async {
     for (final event in events) {
@@ -52,16 +80,16 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen> {
   Future<void> _deleteEvent(dynamic event) async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (_) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: const Text('Delete Memory'),
         content: Text('Delete "${event.title}"? This cannot be undone.'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context, false),
+            onPressed: () => Navigator.of(dialogContext).pop(false),
             child: const Text('Cancel'),
           ),
           TextButton(
-            onPressed: () => Navigator.pop(context, true),
+            onPressed: () => Navigator.of(dialogContext).pop(true),
             child: Text(
               'Delete',
               style: TextStyle(color: Theme.of(context).colorScheme.error),
@@ -80,9 +108,31 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen> {
     final eventsAsync = ref.watch(eventsProvider);
     final viewMode = ref.watch(timelineViewModeProvider);
     final db = ref.read(databaseProvider);
+    final now = DateTime.now();
+
+    final totalEvents = eventsAsync.maybeWhen(
+      data: (events) => events.length,
+      orElse: () => 0,
+    );
+    final monthEvents = eventsAsync.maybeWhen(
+      data: (events) => events
+          .cast<LifeEvent>()
+          .where((e) => e.timestamp.year == now.year && e.timestamp.month == now.month)
+          .length,
+      orElse: () => 0,
+    );
+    final streak = eventsAsync.maybeWhen(
+      data: (events) => _consecutiveStreak(events.cast<LifeEvent>()),
+      orElse: () => 0,
+    );
 
     return AppScaffold(
-      title: 'Life Replay',
+      titleWidget: _JourneyAppBarHeader(
+        greeting: _timeGreeting(),
+        monthEventCount: monthEvents,
+        totalEventCount: totalEvents,
+        streakDays: streak,
+      ),
       actions: [
         IconButton(
           tooltip: viewMode == TimelineViewMode.linear
@@ -149,3 +199,53 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen> {
     );
   }
 }
+
+class _JourneyAppBarHeader extends StatelessWidget {
+  final String greeting;
+  final int monthEventCount;
+  final int totalEventCount;
+  final int streakDays;
+
+  const _JourneyAppBarHeader({
+    required this.greeting,
+    required this.monthEventCount,
+    required this.totalEventCount,
+    required this.streakDays,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final now = DateTime.now();
+    final month = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][now.month - 1];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.auto_awesome, size: 16),
+            const SizedBox(width: 6),
+            Text(
+              'Journey',
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
+            ),
+          ],
+        ),
+        const SizedBox(height: 2),
+        Text(
+          '$greeting · $month ${now.day} · $monthEventCount this month · $totalEventCount total · $streakDays-day streak',
+          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                color: cs.onSurfaceVariant,
+                fontWeight: FontWeight.w500,
+              ),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+      ],
+    );
+  }
+}
+

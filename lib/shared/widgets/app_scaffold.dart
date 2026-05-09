@@ -4,6 +4,7 @@ import 'package:life_replay/core/theme/context_theme.dart';
 
 class AppScaffold extends StatelessWidget {
   final String? title;
+  final Widget? titleWidget;
   final Widget body;
   final List<Widget> actions;
   final Widget? floatingActionButton;
@@ -15,6 +16,7 @@ class AppScaffold extends StatelessWidget {
   const AppScaffold({
     super.key,
     this.title,
+    this.titleWidget,
     required this.body,
     this.actions = const [],
     this.floatingActionButton,
@@ -30,9 +32,10 @@ class AppScaffold extends StatelessWidget {
     return Scaffold(
       backgroundColor: backgroundColor ?? context.appColors.background,
       appBar: title == null
+      && titleWidget == null
           ? null
           : AppBar(
-              title: Text(title!),
+              title: titleWidget ?? Text(title!),
               centerTitle: centerTitle,
               automaticallyImplyLeading: false,
               leading: autoLeading && canPop

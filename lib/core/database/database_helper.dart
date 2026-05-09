@@ -21,7 +21,7 @@ class DatabaseHelper {
     final path = join(dbPath, 'life_replay.db');
     return await openDatabase(
       path,
-      version: 2,
+      version: 3,
       onCreate: _createDatabase,
       onUpgrade: _upgradeDatabase,
     );
@@ -59,7 +59,10 @@ class DatabaseHelper {
         start_date INTEGER NOT NULL,
         end_date INTEGER NOT NULL,
         phase_type TEXT NOT NULL,
-        description TEXT NOT NULL
+        description TEXT NOT NULL,
+        avg_mood REAL DEFAULT 3.0,
+        event_count INTEGER DEFAULT 0,
+        top_tags TEXT DEFAULT ''
       )
     ''');
 
@@ -69,10 +72,12 @@ class DatabaseHelper {
 
   Future<void> _upgradeDatabase(Database db, int oldVersion, int newVersion) async {
     if (oldVersion < 2) {
-      // Add location_name column for version upgrade
-      await db.execute('''
-        ALTER TABLE life_events ADD COLUMN location_name TEXT
-      ''');
+      await db.execute('ALTER TABLE life_events ADD COLUMN location_name TEXT');
+    }
+    if (oldVersion < 3) {
+      await db.execute("ALTER TABLE life_phases ADD COLUMN avg_mood REAL DEFAULT 3.0");
+      await db.execute("ALTER TABLE life_phases ADD COLUMN event_count INTEGER DEFAULT 0");
+      await db.execute("ALTER TABLE life_phases ADD COLUMN top_tags TEXT DEFAULT ''");
     }
   }
 
@@ -254,10 +259,21 @@ class DatabaseHelper {
     final events = await getEvents();
     if (events.isEmpty) return;
 
+    // Load all tags so the detector can use them for smarter classification
+    final tagsByEventId = <int, List<String>>{};
+    for (final event in events) {
+      if (event.id != null) {
+        tagsByEventId[event.id!] = await getTagsForEvent(event.id!);
+      }
+    }
+
     final db = await database;
     await db.delete('life_phases');
 
-    final detected = PhaseDetector.detectPhases(events);
+    final detected = PhaseDetector.detectPhases(
+      events,
+      tagsByEventId: tagsByEventId,
+    );
     for (final phase in detected) {
       await db.insert('life_phases', {
         'name': phase['name'],
@@ -265,13 +281,17 @@ class DatabaseHelper {
         'end_date': phase['end_date'],
         'phase_type': phase['phase_type'],
         'description': phase['description'],
+        'avg_mood': phase['avg_mood'] ?? 3.0,
+        'event_count': phase['event_count'] ?? 0,
+        'top_tags': phase['top_tags'] ?? '',
       });
     }
   }
 
   Future<List<LifePhase>> getPhases() async {
     final db = await database;
-    final maps = await db.query('life_phases', orderBy: 'start_date ASC');
+    // Newest first
+    final maps = await db.query('life_phases', orderBy: 'start_date DESC');
     return maps.map(LifePhase.fromMap).toList();
   }
 

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:intl/intl.dart';
 import 'package:life_replay/core/models/life_event.dart';
+import 'package:life_replay/core/providers/chapter_replay_provider.dart';
 import 'package:life_replay/core/providers/database_provider.dart';
 import 'package:life_replay/core/theme/context_theme.dart';
 import 'package:life_replay/shared/widgets/app_scaffold.dart';
@@ -26,6 +27,25 @@ class _MemoryReplayScreenState extends ConsumerState<MemoryReplayScreen> {
   DateTime _startDate = DateTime.now().subtract(const Duration(days: 30));
   DateTime _endDate = DateTime.now();
   final _pageController = PageController();
+
+  @override
+  void initState() {
+    super.initState();
+    // Pre-fill date range if arriving from a "Replay this Chapter" tap
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final chapterRange = ref.read(chapterReplayProvider);
+      if (chapterRange != null) {
+        setState(() {
+          _startDate = chapterRange.start;
+          _endDate = chapterRange.end;
+        });
+        // Clear so next visit starts fresh
+        ref.read(chapterReplayProvider.notifier).state = null;
+        // Auto-start replay
+        _loadAndReplay();
+      }
+    });
+  }
 
   @override
   void dispose() {

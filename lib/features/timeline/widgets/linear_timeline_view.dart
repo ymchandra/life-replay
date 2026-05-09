@@ -149,55 +149,53 @@ class _TimelineEventNode extends StatelessWidget {
     final accent = _accentColor(cs);
     final hasPhoto = event.photoPath != null && event.photoPath!.isNotEmpty;
 
-    return Column(
-      children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
+    return Padding(
+      padding: EdgeInsets.only(bottom: isLast ? 0 : 10),
+      child: IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Timeline connector
-            Column(
-              children: [
-                if (!isFirst)
-                  SizedBox(
-                    height: 16,
-                    child: Center(
-                      child: Container(
-                        width: 2,
-                        color: accent.withOpacity(0.3),
-                      ),
+            // Timeline rail: top connector + dot + bottom connector
+            SizedBox(
+              width: 20,
+              child: Column(
+                children: [
+                  // Top connector (all nodes except the first)
+                  if (!isFirst)
+                    Container(
+                      width: 2,
+                      height: 16,
+                      color: accent.withOpacity(0.3),
+                    ),
+                  // Dot
+                  Container(
+                    width: 12,
+                    height: 12,
+                    margin: EdgeInsets.only(top: isFirst ? 16 : 0),
+                    decoration: BoxDecoration(
+                      color: accent,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: accent.withOpacity(0.35),
+                          blurRadius: 6,
+                          spreadRadius: 1,
+                        ),
+                      ],
                     ),
                   ),
-                // Timeline dot
-                Container(
-                  width: 12,
-                  height: 12,
-                  decoration: BoxDecoration(
-                    color: accent,
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: accent.withOpacity(0.4),
-                        blurRadius: 8,
-                        spreadRadius: 2,
-                      ),
-                    ],
-                  ),
-                ),
-                if (!isLast)
-                  SizedBox(
-                    height: 240, // Height of event card + spacing
-                    child: Center(
-                      child: Container(
-                        width: 2,
-                        height: double.infinity,
-                        color: accent.withOpacity(0.3),
+                  // Bottom connector stretches to fill remaining card height
+                  if (!isLast)
+                    Expanded(
+                      child: Center(
+                        child: Container(width: 2, color: accent.withOpacity(0.3)),
                       ),
                     ),
-                  ),
-              ],
+                ],
+              ),
             ),
-            const SizedBox(width: 16),
-            // Event card
+            const SizedBox(width: 12),
+            // Event card — fills the remaining width
             Expanded(
               child: _TimelineEventCard(
                 event: event,
@@ -209,14 +207,10 @@ class _TimelineEventNode extends StatelessWidget {
             ),
           ],
         ),
-        if (!isLast) const SizedBox(height: 8),
-      ],
-    ).animate(delay: Duration(milliseconds: animationIndex * 35)).fadeIn(duration: 320.ms).slideX(
-          begin: -0.1,
-          end: 0,
-          duration: 320.ms,
-          curve: Curves.easeOut,
-        );
+      ),
+    ).animate(delay: Duration(milliseconds: animationIndex * 35))
+        .fadeIn(duration: 320.ms)
+        .slideX(begin: -0.08, end: 0, duration: 320.ms, curve: Curves.easeOut);
   }
 }
 

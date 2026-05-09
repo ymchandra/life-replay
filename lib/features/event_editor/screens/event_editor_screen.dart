@@ -98,6 +98,50 @@ class _EventEditorScreenState extends ConsumerState<EventEditorScreen> {
     });
   }
 
+  String _formatTimestamp(DateTime dt) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final d = DateTime(dt.year, dt.month, dt.day);
+    final hour = dt.hour;
+    final minute = dt.minute.toString().padLeft(2, '0');
+    final period = hour < 12 ? 'AM' : 'PM';
+    final h = hour % 12 == 0 ? 12 : hour % 12;
+    final timeStr = '$h:$minute $period';
+    if (d == today) return 'Today, $timeStr';
+    if (d == today.subtract(const Duration(days: 1))) return 'Yesterday, $timeStr';
+    final months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return '${months[dt.month - 1]} ${dt.day}, ${dt.year}  $timeStr';
+  }
+
+  Future<void> _pickDateTime() async {
+    final pickedDate = await showDatePicker(
+      context: context,
+      initialDate: _timestamp,
+      firstDate: DateTime(1970),
+      lastDate: DateTime.now().add(const Duration(days: 365)),
+      helpText: 'When did this happen?',
+    );
+    if (pickedDate == null || !mounted) return;
+
+    final pickedTime = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.fromDateTime(_timestamp),
+      helpText: 'What time?',
+    );
+    if (!mounted) return;
+
+    setState(() {
+      _timestamp = DateTime(
+        pickedDate.year,
+        pickedDate.month,
+        pickedDate.day,
+        pickedTime?.hour ?? _timestamp.hour,
+        pickedTime?.minute ?? _timestamp.minute,
+      );
+    });
+  }
+
+
   Future<void> _insertImageInline() async {
     final picker = ImagePicker();
     final image = await picker.pickImage(source: ImageSource.gallery, imageQuality: 85);
@@ -351,6 +395,36 @@ class _EventEditorScreenState extends ConsumerState<EventEditorScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Date/time picker chip
+                  GestureDetector(
+                    onTap: _pickDateTime,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: cs.surfaceVariant.withOpacity(0.5),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: cs.outline.withOpacity(0.35)),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Iconsax.calendar_edit, size: 14, color: cs.primary),
+                          const SizedBox(width: 6),
+                          Text(
+                            _formatTimestamp(_timestamp),
+                            style: context.appText.labelMedium?.copyWith(
+                              color: cs.onSurface,
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          Icon(Iconsax.arrow_down_1, size: 12,
+                              color: cs.onSurfaceVariant),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  // Formatting toolbar
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.fromLTRB(8, 6, 8, 6),

@@ -26,19 +26,19 @@ void main() {
     });
 
     test('returns empty list when no week has enough events', () {
-      // Only 2 events per week (threshold is 3)
+      // Only 1 event per week (threshold is 2)
       final week = DateTime(2024, 1, 1); // Monday
-      final events = _weekEvents(week, 2);
+      final events = _weekEvents(week, 1);
       expect(PhaseDetector.detectPhases(events), isEmpty);
     });
 
     test('detects a single active phase', () {
       final week = DateTime(2024, 1, 1); // Monday
-      // 3 events in the same week meets the threshold
-      final events = _weekEvents(week, 3);
+      // 2 events in the same week meets the lowered threshold
+      final events = _weekEvents(week, 2);
       final phases = PhaseDetector.detectPhases(events);
       expect(phases.length, 1);
-      expect(phases.first['event_count'], 3);
+      expect(phases.first['event_count'], 2);
     });
 
     test('detects work phase type from keywords', () {
@@ -85,6 +85,8 @@ void main() {
       expect(phase.containsKey('phase_type'), isTrue);
       expect(phase.containsKey('description'), isTrue);
       expect(phase.containsKey('event_count'), isTrue);
+      expect(phase.containsKey('avg_mood'), isTrue);
+      expect(phase.containsKey('top_tags'), isTrue);
     });
   });
 }

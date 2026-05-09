@@ -5,6 +5,9 @@ class LifePhase {
   final DateTime endDate;
   final String phaseType;
   final String description;
+  final double avgMood;
+  final int eventCount;
+  final List<String> topTags;
 
   const LifePhase({
     this.id,
@@ -13,6 +16,9 @@ class LifePhase {
     required this.endDate,
     required this.phaseType,
     required this.description,
+    this.avgMood = 3.0,
+    this.eventCount = 0,
+    this.topTags = const [],
   });
 
   Map<String, dynamic> toMap() {
@@ -23,10 +29,14 @@ class LifePhase {
       'end_date': endDate.millisecondsSinceEpoch,
       'phase_type': phaseType,
       'description': description,
+      'avg_mood': avgMood,
+      'event_count': eventCount,
+      'top_tags': topTags.join(','),
     };
   }
 
   static LifePhase fromMap(Map<String, dynamic> map) {
+    final rawTags = (map['top_tags'] as String?) ?? '';
     return LifePhase(
       id: map['id'] as int?,
       name: map['name'] as String,
@@ -34,6 +44,9 @@ class LifePhase {
       endDate: DateTime.fromMillisecondsSinceEpoch(map['end_date'] as int),
       phaseType: map['phase_type'] as String,
       description: map['description'] as String,
+      avgMood: (map['avg_mood'] as num?)?.toDouble() ?? 3.0,
+      eventCount: (map['event_count'] as int?) ?? 0,
+      topTags: rawTags.isEmpty ? [] : rawTags.split(','),
     );
   }
 
@@ -54,5 +67,13 @@ class LifePhase {
       default:
         return '📖';
     }
+  }
+
+  String get moodEmoji {
+    if (avgMood >= 4.5) return '🤩';
+    if (avgMood >= 3.5) return '😊';
+    if (avgMood >= 2.5) return '🙂';
+    if (avgMood >= 1.5) return '😐';
+    return '😞';
   }
 }

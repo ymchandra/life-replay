@@ -46,18 +46,6 @@ class AppBottomNav extends StatelessWidget {
             selectedColor: cs.primary,
           ),
           SalomonBottomBarItem(
-            icon: const Icon(Iconsax.calendar, size: 20),
-            activeIcon: const Icon(Iconsax.calendar, size: 22),
-            title: const Text('On This Day', style: TextStyle(fontWeight: FontWeight.w700)),
-            selectedColor: cs.primary,
-          ),
-          SalomonBottomBarItem(
-            icon: const Icon(Iconsax.book, size: 20),
-            activeIcon: const Icon(Iconsax.book5, size: 22),
-            title: const Text('Chapters', style: TextStyle(fontWeight: FontWeight.w700)),
-            selectedColor: cs.primary,
-          ),
-          SalomonBottomBarItem(
             icon: const Icon(Iconsax.play, size: 20),
             activeIcon: const Icon(Iconsax.play_cricle, size: 22),
             title: const Text('Replay', style: TextStyle(fontWeight: FontWeight.w700)),

@@ -80,7 +80,21 @@ class _SwipeToRevealCardState extends State<SwipeToRevealCard>
               top: 0,
               bottom: 0,
               width: _revealWidth,
-              child: Row(
+              child: AnimatedBuilder(
+                animation: _ctrl,
+                builder: (_, child) {
+                  // Keep actions fully hidden at rest to avoid entry-animation flashes
+                  // when grid tiles fade in after tab/screen transitions.
+                  final visible = _ctrl.value > 0.001;
+                  return IgnorePointer(
+                    ignoring: !visible,
+                    child: Opacity(
+                      opacity: _ctrl.value,
+                      child: child,
+                    ),
+                  );
+                },
+                child: Row(
                 children: [
                   // Edit
                   Expanded(
@@ -149,6 +163,7 @@ class _SwipeToRevealCardState extends State<SwipeToRevealCard>
                     ),
                   ),
                 ],
+              ),
               ),
             ),
 

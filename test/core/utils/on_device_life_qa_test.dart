@@ -168,7 +168,7 @@ void main() {
           mood: 4,
           timestamp: DateTime(2024, 1, 1),
           photo: '/tmp/a.jpg',
-        ).copyWith(sourceType: 'photo'),
+        ),
         _event(
           id: 2,
           title: 'Voice reflection',
@@ -176,7 +176,7 @@ void main() {
           mood: 3,
           timestamp: DateTime(2024, 1, 2),
           voice: '/tmp/b.m4a',
-        ).copyWith(sourceType: 'call'),
+        ),
       ];
 
       final result = OnDeviceLifeQa.answer(

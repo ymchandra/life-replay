@@ -16,6 +16,7 @@ class NormalizedMemoryCandidate {
 }
 
 class MemoryNormalizer {
+  // Confidence below this threshold is treated as low-context and marked for review.
   static const double _reviewThreshold = 0.45;
 
   static NormalizedMemoryCandidate normalize(RawMemorySignal signal) {
@@ -72,6 +73,10 @@ class MemoryNormalizer {
     RawMemorySignal signal, {
     required String contextText,
   }) {
+    // Weighted heuristic:
+    // - base trust for a structured signal
+    // - richer context (text/media/location) increases confidence
+    // - score is bounded to [0, 1] and compared with _reviewThreshold
     var score = 0.2;
     if ((signal.textHint ?? '').trim().length >= 12) score += 0.25;
     if ((signal.photoPath ?? '').isNotEmpty || (signal.videoPath ?? '').isNotEmpty) {

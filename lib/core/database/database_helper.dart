@@ -336,6 +336,28 @@ class DatabaseHelper {
       if (rows.isNotEmpty) return rows.first['event_id'] as int?;
     }
 
+    // Legacy fallback dedupe for pre-v5 events that may not have source link metadata.
+    if ((event.photoPath ?? '').isNotEmpty) {
+      final rows = await db.query(
+        'life_events',
+        columns: ['id'],
+        where: 'photo_path = ?',
+        whereArgs: [event.photoPath],
+        limit: 1,
+      );
+      if (rows.isNotEmpty) return rows.first['id'] as int?;
+    }
+    if ((event.videoPath ?? '').isNotEmpty) {
+      final rows = await db.query(
+        'life_events',
+        columns: ['id'],
+        where: 'video_path = ?',
+        whereArgs: [event.videoPath],
+        limit: 1,
+      );
+      if (rows.isNotEmpty) return rows.first['id'] as int?;
+    }
+
     return null;
   }
 
@@ -395,7 +417,12 @@ class DatabaseHelper {
     final existingTitle = existing.title.trim();
     final preferIncomingTitle =
         existingTitle.isEmpty || existingTitle.toLowerCase() == 'memory';
-    final hasManualContent = existing.sourceType == 'manual' && existing.content.trim().isNotEmpty;
+    final hasManualContent = existing.sourceType == 'manual' &&
+        existing.syncState == 'manual' &&
+        existing.content.trim().isNotEmpty &&
+        !existing.hasPhoto &&
+        !existing.hasVideo &&
+        !existing.hasVoiceNote;
     final mergedSyncState = existing.syncState == 'manual'
         ? 'manual'
         : (existing.syncState == 'pending_review' || incoming.syncState == 'pending_review')

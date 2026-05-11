@@ -13,6 +13,7 @@ import 'package:life_replay/core/providers/database_provider.dart';
 import 'package:life_replay/core/services/location_service.dart';
 import 'package:life_replay/core/theme/context_theme.dart';
 import 'package:life_replay/shared/widgets/app_scaffold.dart';
+import 'package:life_replay/shared/widgets/app_toast.dart';
 import 'package:life_replay/shared/widgets/glassmorphism_card.dart';
 import 'package:life_replay/shared/widgets/location_chip.dart';
 import 'package:life_replay/shared/widgets/mood_indicator.dart';
@@ -350,8 +351,10 @@ class _MemoryReplayScreenState extends ConsumerState<MemoryReplayScreen> {
     final session = await _buildSession();
     if (session.events.isEmpty) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('No memories match these replay settings.')),
+        showAppToast(
+          context,
+          'No memories match these replay settings.',
+          type: AppToastType.warning,
         );
       }
       return;
@@ -1062,9 +1065,9 @@ class _ReplayCompleteView extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
-          const WarmHeroArt(variant: HeroArtVariant.insights, height: 180),
+          const WarmHeroArt(variant: HeroArtVariant.replay, height: 180),
           const SizedBox(height: 18),
-          Text('Replay complete', style: context.appText.headlineSmall),
+          Text('Session recap', style: context.appText.headlineSmall),
           const SizedBox(height: 8),
           Text(
             summary.moodArc,
@@ -1109,8 +1112,10 @@ class _ReplayCompleteView extends StatelessWidget {
           const SizedBox(height: 10),
           TextButton.icon(
             onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Share memory card is coming soon.')),
+              showAppToast(
+                context,
+                'Share memory card is coming soon.',
+                type: AppToastType.info,
               );
             },
             icon: const Icon(Iconsax.share),

@@ -14,6 +14,7 @@ import 'package:life_replay/features/timeline/widgets/grid_timeline_view.dart';
 import 'package:life_replay/features/timeline/widgets/linear_timeline_view.dart';
 import 'package:life_replay/features/timeline/widgets/on_this_day_banner.dart';
 import 'package:life_replay/shared/widgets/app_scaffold.dart';
+import 'package:life_replay/shared/widgets/app_toast.dart';
 import 'package:life_replay/shared/widgets/empty_state.dart';
 
 enum TimelineViewMode { linear, grid }
@@ -65,8 +66,10 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen>
       if (imported > 0) {
         await ref.read(eventsProvider.notifier).loadEvents();
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('$imported photo ${imported == 1 ? 'memory' : 'memories'} imported from gallery')),
+          showAppToast(
+            context,
+            '$imported photo ${imported == 1 ? 'memory' : 'memories'} imported from gallery',
+            type: AppToastType.success,
           );
         }
       }

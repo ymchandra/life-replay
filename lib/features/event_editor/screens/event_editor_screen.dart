@@ -15,6 +15,7 @@ import 'package:life_replay/core/providers/location_provider.dart';
 import 'package:life_replay/core/services/location_service.dart';
 import 'package:life_replay/core/theme/context_theme.dart';
 import 'package:life_replay/shared/widgets/app_scaffold.dart';
+import 'package:life_replay/shared/widgets/app_toast.dart';
 import 'package:life_replay/shared/widgets/location_chip.dart';
 import 'package:life_replay/shared/widgets/location_picker_dialog.dart';
 
@@ -382,9 +383,7 @@ class _EventEditorScreenState extends ConsumerState<EventEditorScreen>
 
   Future<void> _captureCurrentLocation() async {
     try {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Getting your location...')),
-      );
+      showAppToast(context, 'Getting your location...', type: AppToastType.info);
 
       final position = await LocationService.getCurrentLocation();
       if (position != null) {
@@ -400,29 +399,21 @@ class _EventEditorScreenState extends ConsumerState<EventEditorScreen>
             _locationName = locationName;
           });
 
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                locationName ?? 'Location captured',
-              ),
-            ),
-          );
+          showAppToast(context, locationName ?? 'Location captured', type: AppToastType.success);
         }
       } else {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Unable to get location. Check permissions and try again.'),
-              duration: Duration(seconds: 3),
-            ),
+          showAppToast(
+            context,
+            'Unable to get location. Check permissions and try again.',
+            type: AppToastType.warning,
+            duration: const Duration(seconds: 3),
           );
         }
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: ${e.toString()}')),
-        );
+        showAppToast(context, 'Error: ${e.toString()}', type: AppToastType.error);
       }
     }
   }
@@ -449,17 +440,11 @@ class _EventEditorScreenState extends ConsumerState<EventEditorScreen>
           _locationName = locationName;
         });
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(locationName ?? 'Location selected'),
-          ),
-        );
+        showAppToast(context, locationName ?? 'Location selected', type: AppToastType.success);
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: ${e.toString()}')),
-        );
+        showAppToast(context, 'Error: ${e.toString()}', type: AppToastType.error);
       }
     }
   }
@@ -470,9 +455,7 @@ class _EventEditorScreenState extends ConsumerState<EventEditorScreen>
       _longitude = null;
       _locationName = null;
     });
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Location cleared')),
-    );
+    showAppToast(context, 'Location cleared', type: AppToastType.info);
   }
 
   Future<void> _save() async {
@@ -481,8 +464,10 @@ class _EventEditorScreenState extends ConsumerState<EventEditorScreen>
         (_videoPath?.isNotEmpty ?? false) ||
         (_voiceNotePath?.isNotEmpty ?? false);
     if (content.isEmpty && !hasMedia) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Add text, photo, video, or voice note before saving.')),
+      showAppToast(
+        context,
+        'Add text, photo, video, or voice note before saving.',
+        type: AppToastType.warning,
       );
       return;
     }
@@ -522,9 +507,7 @@ class _EventEditorScreenState extends ConsumerState<EventEditorScreen>
       if (mounted) context.pop();
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error saving: $e')),
-        );
+        showAppToast(context, 'Error saving: $e', type: AppToastType.error);
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);

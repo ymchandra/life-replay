@@ -378,8 +378,6 @@ class OnDeviceLifeQa {
           year = currentCentury + year;
           if (year > currentYear + 50) {
             year -= 100;
-          } else if (year < currentYear - 50) {
-            year += 100;
           }
         }
         return DateTime(year, parsed.month, parsed.day);

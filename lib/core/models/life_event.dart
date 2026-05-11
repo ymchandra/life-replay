@@ -5,6 +5,8 @@ class LifeEvent {
   final int mood;
   final DateTime timestamp;
   final String? photoPath;
+  final String? videoPath;
+  final String? voiceNotePath;
   final double? latitude;
   final double? longitude;
   final String? locationName;
@@ -17,6 +19,8 @@ class LifeEvent {
     required this.mood,
     required this.timestamp,
     this.photoPath,
+    this.videoPath,
+    this.voiceNotePath,
     this.latitude,
     this.longitude,
     this.locationName,
@@ -31,6 +35,8 @@ class LifeEvent {
       'mood': mood,
       'timestamp': timestamp.millisecondsSinceEpoch,
       'photo_path': photoPath,
+      'video_path': videoPath,
+      'voice_note_path': voiceNotePath,
       'latitude': latitude,
       'longitude': longitude,
       'location_name': locationName,
@@ -46,12 +52,19 @@ class LifeEvent {
       mood: map['mood'] as int,
       timestamp: DateTime.fromMillisecondsSinceEpoch(map['timestamp'] as int),
       photoPath: map['photo_path'] as String?,
-      latitude: map['latitude'] as double?,
-      longitude: map['longitude'] as double?,
+      videoPath: map['video_path'] as String?,
+      voiceNotePath: map['voice_note_path'] as String?,
+      latitude: (map['latitude'] as num?)?.toDouble(),
+      longitude: (map['longitude'] as num?)?.toDouble(),
       locationName: map['location_name'] as String?,
       phaseId: map['phase_id'] as int?,
     );
   }
+
+  bool get hasText => content.trim().isNotEmpty;
+  bool get hasPhoto => (photoPath ?? '').isNotEmpty;
+  bool get hasVideo => (videoPath ?? '').isNotEmpty;
+  bool get hasVoiceNote => (voiceNotePath ?? '').isNotEmpty;
 
   LifeEvent copyWith({
     int? id,
@@ -60,6 +73,8 @@ class LifeEvent {
     int? mood,
     DateTime? timestamp,
     String? photoPath,
+    String? videoPath,
+    String? voiceNotePath,
     double? latitude,
     double? longitude,
     String? locationName,
@@ -72,6 +87,8 @@ class LifeEvent {
       mood: mood ?? this.mood,
       timestamp: timestamp ?? this.timestamp,
       photoPath: photoPath ?? this.photoPath,
+      videoPath: videoPath ?? this.videoPath,
+      voiceNotePath: voiceNotePath ?? this.voiceNotePath,
       latitude: latitude ?? this.latitude,
       longitude: longitude ?? this.longitude,
       locationName: locationName ?? this.locationName,

@@ -245,6 +245,8 @@ class _TimelineEventCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = context.appColors;
     final hasContent = event.content.isNotEmpty;
+    final hasVideo = event.videoPath != null && event.videoPath!.isNotEmpty;
+    final hasVoice = event.voiceNotePath != null && event.voiceNotePath!.isNotEmpty;
 
     return Hero(
       tag: 'event_tile_${event.id}',
@@ -312,6 +314,12 @@ class _TimelineEventCard extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(width: 6),
+                          if (hasVideo)
+                            Icon(Iconsax.video, size: 14, color: cs.onSurfaceVariant),
+                          if (hasVideo) const SizedBox(width: 4),
+                          if (hasVoice)
+                            Icon(Iconsax.microphone, size: 14, color: cs.onSurfaceVariant),
+                          if (hasVoice) const SizedBox(width: 6),
                           MoodIndicator(mood: event.mood, size: 16),
                         ],
                       ),
@@ -327,6 +335,20 @@ class _TimelineEventCard extends StatelessWidget {
                           ),
                           maxLines: 3,
                           overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                      if (!hasContent && (hasPhoto || hasVideo || hasVoice)) ...[
+                        const SizedBox(height: 6),
+                        Text(
+                          [
+                            if (hasPhoto) 'Photo',
+                            if (hasVideo) 'Video',
+                            if (hasVoice) 'Voice note',
+                          ].join(' · '),
+                          style: context.appText.bodySmall?.copyWith(
+                            color: cs.onSurfaceVariant,
+                            height: 1.3,
+                          ),
                         ),
                       ],
 

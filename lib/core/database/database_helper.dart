@@ -21,7 +21,7 @@ class DatabaseHelper {
     final path = join(dbPath, 'life_replay.db');
     return await openDatabase(
       path,
-      version: 3,
+      version: 4,
       onCreate: _createDatabase,
       onUpgrade: _upgradeDatabase,
     );
@@ -36,6 +36,8 @@ class DatabaseHelper {
         mood INTEGER NOT NULL,
         timestamp INTEGER NOT NULL,
         photo_path TEXT,
+        video_path TEXT,
+        voice_note_path TEXT,
         latitude REAL,
         longitude REAL,
         location_name TEXT,
@@ -78,6 +80,10 @@ class DatabaseHelper {
       await db.execute("ALTER TABLE life_phases ADD COLUMN avg_mood REAL DEFAULT 3.0");
       await db.execute("ALTER TABLE life_phases ADD COLUMN event_count INTEGER DEFAULT 0");
       await db.execute("ALTER TABLE life_phases ADD COLUMN top_tags TEXT DEFAULT ''");
+    }
+    if (oldVersion < 4) {
+      await db.execute('ALTER TABLE life_events ADD COLUMN video_path TEXT');
+      await db.execute('ALTER TABLE life_events ADD COLUMN voice_note_path TEXT');
     }
   }
 

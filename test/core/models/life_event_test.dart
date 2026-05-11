@@ -11,6 +11,8 @@ void main() {
     mood: 4,
     timestamp: timestamp,
     photoPath: '/photos/img.jpg',
+    videoPath: '/videos/clip.mp4',
+    voiceNotePath: '/audio/note.m4a',
     latitude: 37.7749,
     longitude: -122.4194,
     phaseId: 2,
@@ -25,6 +27,8 @@ void main() {
       expect(map['mood'], 4);
       expect(map['timestamp'], timestamp.millisecondsSinceEpoch);
       expect(map['photo_path'], '/photos/img.jpg');
+      expect(map['video_path'], '/videos/clip.mp4');
+      expect(map['voice_note_path'], '/audio/note.m4a');
       expect(map['latitude'], 37.7749);
       expect(map['longitude'], -122.4194);
       expect(map['phase_id'], 2);
@@ -49,6 +53,8 @@ void main() {
       expect(restored.mood, event.mood);
       expect(restored.timestamp, event.timestamp);
       expect(restored.photoPath, event.photoPath);
+      expect(restored.videoPath, event.videoPath);
+      expect(restored.voiceNotePath, event.voiceNotePath);
       expect(restored.latitude, event.latitude);
       expect(restored.longitude, event.longitude);
       expect(restored.phaseId, event.phaseId);
@@ -61,6 +67,8 @@ void main() {
       expect(copy.id, event.id);
       expect(copy.content, event.content);
       expect(copy.timestamp, event.timestamp);
+      expect(copy.videoPath, event.videoPath);
+      expect(copy.voiceNotePath, event.voiceNotePath);
     });
 
     test('copyWith preserves all fields when nothing overridden', () {

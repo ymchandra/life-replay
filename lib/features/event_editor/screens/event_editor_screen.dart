@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:iconsax/iconsax.dart';
@@ -37,6 +38,8 @@ class _EventEditorScreenState extends ConsumerState<EventEditorScreen>
   late Animation<Offset> _toolbarSlide;
 
   String? _photoPath;
+  String? _videoPath;
+  String? _voiceNotePath;
   bool _isLoading = false;
   bool _isEditing = false;
   bool _isToolbarVisible = false;
@@ -100,6 +103,8 @@ class _EventEditorScreenState extends ConsumerState<EventEditorScreen>
       _contentController.text = event.content;
       _timestamp = event.timestamp;
       _photoPath = event.photoPath;
+      _videoPath = event.videoPath;
+      _voiceNotePath = event.voiceNotePath;
       _latitude = event.latitude;
       _longitude = event.longitude;
       _locationName = event.locationName;
@@ -191,8 +196,46 @@ class _EventEditorScreenState extends ConsumerState<EventEditorScreen>
     }
   }
 
+  Future<void> _pickVideoAttachment({bool insertReference = true}) async {
+    final picker = ImagePicker();
+    final video = await picker.pickVideo(source: ImageSource.gallery);
+    if (video != null) {
+      setState(() {
+        _videoPath = video.path;
+      });
+      if (insertReference) {
+        _insertAtCursor('\n🎥 Video attached\n');
+      }
+    }
+  }
+
+  Future<void> _pickVoiceNoteAttachment({bool insertReference = true}) async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: const ['m4a', 'aac', 'mp3', 'wav', 'ogg'],
+      allowMultiple: false,
+    );
+    if (result == null || result.files.isEmpty) return;
+    final path = result.files.single.path;
+    if (path == null || path.isEmpty) return;
+    setState(() {
+      _voiceNotePath = path;
+    });
+    if (insertReference) {
+      _insertAtCursor('\n🎤 Voice note attached\n');
+    }
+  }
+
   void _insertImageReferenceOnly() {
     _insertAtCursor('\n📷 Photo\n');
+  }
+
+  void _insertVideoReferenceOnly() {
+    _insertAtCursor('\n🎥 Video\n');
+  }
+
+  void _insertVoiceReferenceOnly() {
+    _insertAtCursor('\n🎤 Voice note\n');
   }
 
   void _insertChecklistTemplate() {
@@ -236,6 +279,80 @@ class _EventEditorScreenState extends ConsumerState<EventEditorScreen>
               onTap: () {
                 Navigator.pop(context);
                 _insertImageReferenceOnly();
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _showVideoOptions() async {
+    await showModalBottomSheet(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Iconsax.video),
+              title: const Text('Attach video + mention in text'),
+              onTap: () {
+                Navigator.pop(context);
+                _pickVideoAttachment(insertReference: true);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Iconsax.video_add),
+              title: const Text('Attach video only'),
+              onTap: () {
+                Navigator.pop(context);
+                _pickVideoAttachment(insertReference: false);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Iconsax.document_upload),
+              title: const Text('Insert video marker at cursor'),
+              onTap: () {
+                Navigator.pop(context);
+                _insertVideoReferenceOnly();
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _showVoiceOptions() async {
+    await showModalBottomSheet(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Iconsax.microphone),
+              title: const Text('Attach voice note + mention in text'),
+              onTap: () {
+                Navigator.pop(context);
+                _pickVoiceNoteAttachment(insertReference: true);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Iconsax.microphone_2),
+              title: const Text('Attach voice note only'),
+              onTap: () {
+                Navigator.pop(context);
+                _pickVoiceNoteAttachment(insertReference: false);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Iconsax.document_upload),
+              title: const Text('Insert voice-note marker at cursor'),
+              onTap: () {
+                Navigator.pop(context);
+                _insertVoiceReferenceOnly();
               },
             ),
           ],
@@ -360,9 +477,12 @@ class _EventEditorScreenState extends ConsumerState<EventEditorScreen>
 
   Future<void> _save() async {
     final content = _contentController.text.trim();
-    if (content.isEmpty) {
+    final hasMedia = (_photoPath?.isNotEmpty ?? false) ||
+        (_videoPath?.isNotEmpty ?? false) ||
+        (_voiceNotePath?.isNotEmpty ?? false);
+    if (content.isEmpty && !hasMedia) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Write something before saving.')),
+        const SnackBar(content: Text('Add text, photo, video, or voice note before saving.')),
       );
       return;
     }
@@ -386,6 +506,8 @@ class _EventEditorScreenState extends ConsumerState<EventEditorScreen>
       mood: inferred.mood,
       timestamp: _timestamp,
       photoPath: _photoPath,
+      videoPath: _videoPath,
+      voiceNotePath: _voiceNotePath,
       latitude: _latitude,
       longitude: _longitude,
       locationName: _locationName,
@@ -580,6 +702,16 @@ class _EventEditorScreenState extends ConsumerState<EventEditorScreen>
                                 onPressed: _insertCurrentTimestamp,
                               ),
                               _ToolbarIconButton(
+                                icon: Iconsax.video,
+                                tooltip: 'Video options',
+                                onPressed: _showVideoOptions,
+                              ),
+                              _ToolbarIconButton(
+                                icon: Iconsax.microphone,
+                                tooltip: 'Voice note options',
+                                onPressed: _showVoiceOptions,
+                              ),
+                              _ToolbarIconButton(
                                 icon: Iconsax.flash_1,
                                 tooltip: 'Key moment',
                                 onPressed: _insertKeyMoment,
@@ -645,6 +777,68 @@ class _EventEditorScreenState extends ConsumerState<EventEditorScreen>
                       onPressed: () => setState(() => _photoPath = null),
                       icon: const Icon(Iconsax.trash, size: 16),
                       label: const Text('Remove image'),
+                    ),
+                  ],
+                  if (_videoPath != null) ...[
+                    const SizedBox(height: 12),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: cs.surfaceVariant.withOpacity(0.35),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: cs.outline.withOpacity(0.25)),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(Iconsax.video, size: 18, color: cs.primary),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              _videoPath!.split('\\').last,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: context.appText.bodySmall,
+                            ),
+                          ),
+                          IconButton(
+                            onPressed: () => setState(() => _videoPath = null),
+                            icon: const Icon(Iconsax.close_circle, size: 16),
+                            tooltip: 'Remove video',
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                  if (_voiceNotePath != null) ...[
+                    const SizedBox(height: 12),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: cs.surfaceVariant.withOpacity(0.35),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: cs.outline.withOpacity(0.25)),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(Iconsax.microphone, size: 18, color: cs.primary),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              _voiceNotePath!.split('\\').last,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: context.appText.bodySmall,
+                            ),
+                          ),
+                          IconButton(
+                            onPressed: () => setState(() => _voiceNotePath = null),
+                            icon: const Icon(Iconsax.close_circle, size: 16),
+                            tooltip: 'Remove voice note',
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                   if (_latitude != null && _longitude != null) ...[

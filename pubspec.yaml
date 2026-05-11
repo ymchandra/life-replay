@@ -30,6 +30,7 @@ dependencies:
   google_maps_flutter: ^2.7.0
   geocoding: ^3.0.0
   photo_manager: ^3.2.0
+  file_picker: ^8.1.2
 
 dev_dependencies:
   flutter_test:

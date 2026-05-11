@@ -115,10 +115,6 @@ class OnDeviceLifeQa {
     'M/d/yyyy',
     'd-MM-yyyy',
     'd.MM.yyyy',
-    'ddMMMyyyy',
-    'dMMMyyyy',
-    'ddMMMMyyyy',
-    'dMMMMyyyy',
   ];
 
   static LifeQuestionAnswer answer(
@@ -377,8 +373,14 @@ class OnDeviceLifeQa {
         final parsed = DateFormat(pattern).parseStrict(candidate);
         var year = parsed.year;
         if (year < 100) {
-          final currentTwoDigitYear = DateTime.now().year % 100;
-          year = year > currentTwoDigitYear ? 1900 + year : 2000 + year;
+          final currentYear = DateTime.now().year;
+          final currentCentury = (currentYear ~/ 100) * 100;
+          year = currentCentury + year;
+          if (year > currentYear + 50) {
+            year -= 100;
+          } else if (year < currentYear - 50) {
+            year += 100;
+          }
         }
         return DateTime(year, parsed.month, parsed.day);
       } catch (_) {}

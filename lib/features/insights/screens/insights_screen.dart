@@ -183,8 +183,8 @@ class _AskTimelineTabState extends ConsumerState<_AskTimelineTab> {
     try {
       final db = ref.read(databaseProvider);
       final events = await db.getEvents();
-      final taggableIds = events.where((e) => e.id != null).map((e) => e.id!).toList();
-      final tagsByEventId = await db.getTagsForEvents(taggableIds);
+      final eventIds = events.where((e) => e.id != null).map((e) => e.id!).toList();
+      final tagsByEventId = await db.getTagsForEvents(eventIds);
 
       final answer = OnDeviceLifeQa.answer(
         question,

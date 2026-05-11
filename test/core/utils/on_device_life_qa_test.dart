@@ -90,6 +90,13 @@ void main() {
         ),
         _event(
           id: 3,
+          title: 'Trip day 3',
+          content: 'Beach day and sunset walk.',
+          mood: 4,
+          timestamp: DateTime(2021, 3, 3),
+        ),
+        _event(
+          id: 4,
           title: 'After trip',
           content: 'Back to work.',
           mood: 3,
@@ -102,7 +109,8 @@ void main() {
         events: events,
       );
 
-      expect(result.matchedEvents.length, 2);
+      expect(result.matchedEvents.length, 3);
+      expect(result.matchedEvents.any((e) => e.timestamp == DateTime(2021, 3, 10)), isFalse);
       expect(result.inferredStart, DateTime(2021, 3, 1));
       expect(result.inferredEnd, DateTime(2021, 3, 3, 23, 59, 59, 999));
     });

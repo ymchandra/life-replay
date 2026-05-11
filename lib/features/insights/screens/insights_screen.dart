@@ -310,9 +310,10 @@ class _AskTimelineTabState extends ConsumerState<_AskTimelineTab> {
                   const SizedBox(height: 8),
                   ..._result!.highlights.map(
                     (item) {
-                      final locationSuffix = (item.locationName == null || item.locationName!.isEmpty)
-                          ? ''
-                          : ' · ${item.locationName}';
+                      final locationSuffix =
+                          (item.locationName?.isNotEmpty ?? false)
+                              ? ' · ${item.locationName}'
+                              : '';
                       final subtitle =
                           '${DateFormat('MMM d, yyyy').format(item.timestamp)}$locationSuffix · mood ${item.mood}/5';
                       return Padding(

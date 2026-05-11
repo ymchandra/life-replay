@@ -375,7 +375,11 @@ class OnDeviceLifeQa {
     for (final pattern in _supportedDateFormats) {
       try {
         final parsed = DateFormat(pattern).parseStrict(candidate);
-        final year = parsed.year < 100 ? 2000 + parsed.year : parsed.year;
+        var year = parsed.year;
+        if (year < 100) {
+          final currentTwoDigitYear = DateTime.now().year % 100;
+          year = year > currentTwoDigitYear ? 1900 + year : 2000 + year;
+        }
         return DateTime(year, parsed.month, parsed.day);
       } catch (_) {}
     }
@@ -437,13 +441,23 @@ class OnDeviceLifeQa {
         normalizedCandidate.contains(normalizedKeyword)) {
       return true;
     }
-    final singularKeyword = normalizedKeyword.endsWith('s')
-        ? normalizedKeyword.substring(0, normalizedKeyword.length - 1)
-        : normalizedKeyword;
-    final singularCandidate = normalizedCandidate.endsWith('s')
-        ? normalizedCandidate.substring(0, normalizedCandidate.length - 1)
-        : normalizedCandidate;
+    final singularKeyword = _toSingular(normalizedKeyword);
+    final singularCandidate = _toSingular(normalizedCandidate);
     return singularKeyword == singularCandidate;
+  }
+
+  static String _toSingular(String value) {
+    if (value.length <= 3) return value;
+    if (value.endsWith('ies') && value.length > 4) {
+      return '${value.substring(0, value.length - 3)}y';
+    }
+    if (value.endsWith('ses') && value.length > 4) {
+      return value.substring(0, value.length - 2);
+    }
+    if (value.endsWith('s') && !value.endsWith('ss')) {
+      return value.substring(0, value.length - 1);
+    }
+    return value;
   }
 
   static String _normalize(String text) {

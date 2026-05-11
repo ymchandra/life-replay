@@ -21,7 +21,7 @@ class DatabaseHelper {
     final path = join(dbPath, 'life_replay.db');
     return await openDatabase(
       path,
-      version: 4,
+      version: 5,
       onCreate: _createDatabase,
       onUpgrade: _upgradeDatabase,
     );
@@ -41,7 +41,13 @@ class DatabaseHelper {
         latitude REAL,
         longitude REAL,
         location_name TEXT,
-        phase_id INTEGER
+        phase_id INTEGER,
+        source_type TEXT DEFAULT 'manual',
+        source_external_id TEXT,
+        source_hash TEXT,
+        source_confidence REAL DEFAULT 1.0,
+        imported_at INTEGER,
+        sync_state TEXT DEFAULT 'manual'
       )
     ''');
 
@@ -68,8 +74,28 @@ class DatabaseHelper {
       )
     ''');
 
+    await db.execute('''
+      CREATE TABLE event_sources (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        event_id INTEGER NOT NULL,
+        source_type TEXT NOT NULL,
+        external_id TEXT,
+        source_hash TEXT,
+        confidence REAL DEFAULT 1.0,
+        imported_at INTEGER,
+        sync_state TEXT DEFAULT 'synced',
+        metadata_json TEXT DEFAULT '',
+        FOREIGN KEY (event_id) REFERENCES life_events (id) ON DELETE CASCADE
+      )
+    ''');
+
     await db.execute('CREATE INDEX idx_events_timestamp ON life_events (timestamp)');
+    await db.execute('CREATE INDEX idx_events_source_external ON life_events (source_type, source_external_id)');
+    await db.execute('CREATE INDEX idx_events_source_hash ON life_events (source_hash)');
     await db.execute('CREATE INDEX idx_tags_event_id ON event_tags (event_id)');
+    await db.execute('CREATE INDEX idx_event_sources_event_id ON event_sources (event_id)');
+    await db.execute('CREATE INDEX idx_event_sources_external ON event_sources (source_type, external_id)');
+    await db.execute('CREATE INDEX idx_event_sources_hash ON event_sources (source_hash)');
   }
 
   Future<void> _upgradeDatabase(Database db, int oldVersion, int newVersion) async {
@@ -84,6 +110,39 @@ class DatabaseHelper {
     if (oldVersion < 4) {
       await db.execute('ALTER TABLE life_events ADD COLUMN video_path TEXT');
       await db.execute('ALTER TABLE life_events ADD COLUMN voice_note_path TEXT');
+    }
+    if (oldVersion < 5) {
+      await db.execute("ALTER TABLE life_events ADD COLUMN source_type TEXT DEFAULT 'manual'");
+      await db.execute('ALTER TABLE life_events ADD COLUMN source_external_id TEXT');
+      await db.execute('ALTER TABLE life_events ADD COLUMN source_hash TEXT');
+      await db.execute('ALTER TABLE life_events ADD COLUMN source_confidence REAL DEFAULT 1.0');
+      await db.execute('ALTER TABLE life_events ADD COLUMN imported_at INTEGER');
+      await db.execute("ALTER TABLE life_events ADD COLUMN sync_state TEXT DEFAULT 'manual'");
+
+      await db.execute('''
+        CREATE TABLE IF NOT EXISTS event_sources (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          event_id INTEGER NOT NULL,
+          source_type TEXT NOT NULL,
+          external_id TEXT,
+          source_hash TEXT,
+          confidence REAL DEFAULT 1.0,
+          imported_at INTEGER,
+          sync_state TEXT DEFAULT 'synced',
+          metadata_json TEXT DEFAULT '',
+          FOREIGN KEY (event_id) REFERENCES life_events (id) ON DELETE CASCADE
+        )
+      ''');
+      await db.execute(
+        "INSERT INTO event_sources(event_id, source_type, external_id, source_hash, confidence, imported_at, sync_state) "
+        "SELECT id, COALESCE(source_type, 'manual'), source_external_id, source_hash, COALESCE(source_confidence, 1.0), imported_at, COALESCE(sync_state, 'manual') "
+        "FROM life_events",
+      );
+      await db.execute('CREATE INDEX IF NOT EXISTS idx_events_source_external ON life_events (source_type, source_external_id)');
+      await db.execute('CREATE INDEX IF NOT EXISTS idx_events_source_hash ON life_events (source_hash)');
+      await db.execute('CREATE INDEX IF NOT EXISTS idx_event_sources_event_id ON event_sources (event_id)');
+      await db.execute('CREATE INDEX IF NOT EXISTS idx_event_sources_external ON event_sources (source_type, external_id)');
+      await db.execute('CREATE INDEX IF NOT EXISTS idx_event_sources_hash ON event_sources (source_hash)');
     }
   }
 
@@ -169,7 +228,9 @@ class DatabaseHelper {
 
   Future<int> insertEvent(LifeEvent event) async {
     final db = await database;
-    return await db.insert('life_events', event.toMap());
+    final id = await db.insert('life_events', event.toMap());
+    await _upsertEventSourceLink(id, event);
+    return id;
   }
 
   Future<List<LifeEvent>> getEvents({int? limit, int? offset}) async {
@@ -192,18 +253,203 @@ class DatabaseHelper {
 
   Future<int> updateEvent(LifeEvent event) async {
     final db = await database;
-    return await db.update(
+    final updated = await db.update(
       'life_events',
       event.toMap(),
       where: 'id = ?',
       whereArgs: [event.id],
     );
+    if ((event.id ?? 0) > 0) {
+      await _upsertEventSourceLink(event.id!, event);
+    }
+    return updated;
   }
 
   Future<int> deleteEvent(int id) async {
     final db = await database;
+    await db.delete('event_sources', where: 'event_id = ?', whereArgs: [id]);
     await db.delete('event_tags', where: 'event_id = ?', whereArgs: [id]);
     return await db.delete('life_events', where: 'id = ?', whereArgs: [id]);
+  }
+
+  Future<({int eventId, bool inserted, bool merged})> upsertIngestedEvent(
+    LifeEvent event, {
+    List<String> tags = const [],
+  }) async {
+    final existingId = await _findEventIdForIngested(event);
+    if (existingId == null) {
+      final id = await insertEvent(event);
+      if (tags.isNotEmpty) {
+        await setTagsForEvent(id, tags);
+      }
+      return (eventId: id, inserted: true, merged: false);
+    }
+
+    final existing = await getEventById(existingId);
+    if (existing == null) {
+      final id = await insertEvent(event);
+      if (tags.isNotEmpty) {
+        await setTagsForEvent(id, tags);
+      }
+      return (eventId: id, inserted: true, merged: false);
+    }
+
+    final mergedEvent = _mergeEventWithIngested(existing, event);
+    final changed = _isMeaningfullyDifferent(existing, mergedEvent);
+    if (changed) {
+      await updateEvent(mergedEvent);
+    }
+    if (tags.isNotEmpty) {
+      final existingTags = await getTagsForEvent(existingId);
+      final mergedTags = <String>{
+        ...existingTags.map((t) => t.trim().toLowerCase()),
+        ...tags.map((t) => t.trim().toLowerCase()),
+      }.where((tag) => tag.isNotEmpty).toList();
+      await setTagsForEvent(existingId, mergedTags);
+    }
+    await _upsertEventSourceLink(existingId, event);
+    return (eventId: existingId, inserted: false, merged: changed);
+  }
+
+  Future<int?> _findEventIdForIngested(LifeEvent event) async {
+    final db = await database;
+    if ((event.sourceExternalId ?? '').isNotEmpty) {
+      final rows = await db.query(
+        'event_sources',
+        columns: ['event_id'],
+        where: 'source_type = ? AND external_id = ?',
+        whereArgs: [event.sourceType, event.sourceExternalId],
+        limit: 1,
+      );
+      if (rows.isNotEmpty) return rows.first['event_id'] as int?;
+    }
+
+    if ((event.sourceHash ?? '').isNotEmpty) {
+      final rows = await db.query(
+        'event_sources',
+        columns: ['event_id'],
+        where: 'source_hash = ?',
+        whereArgs: [event.sourceHash],
+        limit: 1,
+      );
+      if (rows.isNotEmpty) return rows.first['event_id'] as int?;
+    }
+
+    return null;
+  }
+
+  Future<void> _upsertEventSourceLink(int eventId, LifeEvent event) async {
+    final db = await database;
+    final externalId = (event.sourceExternalId ?? '').trim();
+    final sourceHash = (event.sourceHash ?? '').trim();
+    List<Map<String, Object?>> existing;
+    if (externalId.isNotEmpty) {
+      existing = await db.query(
+        'event_sources',
+        columns: ['id'],
+        where: 'source_type = ? AND external_id = ?',
+        whereArgs: [event.sourceType, externalId],
+        limit: 1,
+      );
+    } else if (sourceHash.isNotEmpty) {
+      existing = await db.query(
+        'event_sources',
+        columns: ['id'],
+        where: 'source_hash = ?',
+        whereArgs: [sourceHash],
+        limit: 1,
+      );
+    } else {
+      existing = await db.query(
+        'event_sources',
+        columns: ['id'],
+        where: 'event_id = ? AND source_type = ?',
+        whereArgs: [eventId, event.sourceType],
+        limit: 1,
+      );
+    }
+    final values = <String, Object?>{
+      'event_id': eventId,
+      'source_type': event.sourceType,
+      'external_id': externalId.isEmpty ? null : externalId,
+      'source_hash': sourceHash.isEmpty ? null : sourceHash,
+      'confidence': event.sourceConfidence,
+      'imported_at': event.importedAt?.millisecondsSinceEpoch,
+      'sync_state': event.syncState,
+      'metadata_json': '',
+    };
+
+    if (existing.isEmpty) {
+      await db.insert('event_sources', values);
+      return;
+    }
+
+    final id = existing.first['id'] as int?;
+    if (id != null) {
+      await db.update('event_sources', values, where: 'id = ?', whereArgs: [id]);
+    }
+  }
+
+  LifeEvent _mergeEventWithIngested(LifeEvent existing, LifeEvent incoming) {
+    final existingTitle = existing.title.trim();
+    final preferIncomingTitle =
+        existingTitle.isEmpty || existingTitle.toLowerCase() == 'memory';
+    final hasManualContent = existing.sourceType == 'manual' && existing.content.trim().isNotEmpty;
+    final mergedSyncState = existing.syncState == 'manual'
+        ? 'manual'
+        : (existing.syncState == 'pending_review' || incoming.syncState == 'pending_review')
+            ? 'pending_review'
+            : 'synced';
+
+    return existing.copyWith(
+      title: preferIncomingTitle ? incoming.title : existing.title,
+      content: hasManualContent
+          ? existing.content
+          : _firstNonEmpty(existing.content, incoming.content),
+      mood: incoming.sourceConfidence >= existing.sourceConfidence
+          ? incoming.mood
+          : existing.mood,
+      photoPath: _firstNonEmpty(existing.photoPath, incoming.photoPath),
+      videoPath: _firstNonEmpty(existing.videoPath, incoming.videoPath),
+      voiceNotePath: _firstNonEmpty(existing.voiceNotePath, incoming.voiceNotePath),
+      latitude: existing.latitude ?? incoming.latitude,
+      longitude: existing.longitude ?? incoming.longitude,
+      locationName: _firstNonEmpty(existing.locationName, incoming.locationName),
+      sourceType: existing.sourceType == 'manual' ? existing.sourceType : incoming.sourceType,
+      sourceExternalId: _firstNonEmpty(existing.sourceExternalId, incoming.sourceExternalId),
+      sourceHash: _firstNonEmpty(existing.sourceHash, incoming.sourceHash),
+      sourceConfidence: incoming.sourceConfidence > existing.sourceConfidence
+          ? incoming.sourceConfidence
+          : existing.sourceConfidence,
+      importedAt: existing.importedAt ?? incoming.importedAt,
+      syncState: mergedSyncState,
+    );
+  }
+
+  bool _isMeaningfullyDifferent(LifeEvent a, LifeEvent b) {
+    return a.title != b.title ||
+        a.content != b.content ||
+        a.mood != b.mood ||
+        a.photoPath != b.photoPath ||
+        a.videoPath != b.videoPath ||
+        a.voiceNotePath != b.voiceNotePath ||
+        a.latitude != b.latitude ||
+        a.longitude != b.longitude ||
+        a.locationName != b.locationName ||
+        a.sourceType != b.sourceType ||
+        a.sourceExternalId != b.sourceExternalId ||
+        a.sourceHash != b.sourceHash ||
+        a.sourceConfidence != b.sourceConfidence ||
+        a.importedAt != b.importedAt ||
+        a.syncState != b.syncState;
+  }
+
+  String? _firstNonEmpty(String? first, String? second) {
+    final a = first?.trim() ?? '';
+    if (a.isNotEmpty) return first;
+    final b = second?.trim() ?? '';
+    if (b.isNotEmpty) return second;
+    return first ?? second;
   }
 
   Future<List<LifeEvent>> getEventsByDateRange(DateTime start, DateTime end) async {
@@ -258,6 +504,27 @@ class DatabaseHelper {
       tagsByEventId.putIfAbsent(eventId, () => <String>[]).add(tag);
     }
     return tagsByEventId;
+  }
+
+  Future<Map<int, List<String>>> getSourceTypesForEvents(List<int> eventIds) async {
+    if (eventIds.isEmpty) return const {};
+    final db = await database;
+    final placeholders = List.filled(eventIds.length, '?').join(',');
+    final rows = await db.rawQuery(
+      'SELECT event_id, source_type FROM event_sources WHERE event_id IN ($placeholders) ORDER BY event_id ASC',
+      eventIds,
+    );
+    final byEvent = <int, List<String>>{};
+    for (final row in rows) {
+      final eventId = row['event_id'] as int?;
+      final sourceType = row['source_type'] as String?;
+      if (eventId == null || sourceType == null || sourceType.trim().isEmpty) continue;
+      final bucket = byEvent.putIfAbsent(eventId, () => <String>[]);
+      if (!bucket.contains(sourceType)) {
+        bucket.add(sourceType);
+      }
+    }
+    return byEvent;
   }
 
   Future<Map<String, int>> getTopTags(int limit) async {

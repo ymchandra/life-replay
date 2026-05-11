@@ -5,10 +5,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:life_replay/core/database/database_helper.dart';
+import 'package:life_replay/core/ingestion/passive_ingestion.dart';
 import 'package:life_replay/core/models/life_event.dart';
 import 'package:life_replay/core/providers/database_provider.dart';
 import 'package:life_replay/core/providers/events_provider.dart';
-import 'package:life_replay/core/services/gallery_memory_sync_service.dart';
+import 'package:life_replay/core/services/passive_memory_sync_service.dart';
 import 'package:life_replay/core/utils/date_utils.dart' as app_date_utils;
 import 'package:life_replay/features/timeline/widgets/grid_timeline_view.dart';
 import 'package:life_replay/features/timeline/widgets/linear_timeline_view.dart';
@@ -33,7 +34,7 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen>
     with WidgetsBindingObserver {
   final Map<int, List<String>> _tagCache = {};
   double _headerScrollOffset = 0;
-  bool _syncingGallery = false;
+  bool _syncingPassiveSources = false;
 
   @override
   void initState() {
@@ -58,24 +59,79 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen>
   }
 
   Future<void> _syncGalleryMemories() async {
-    if (_syncingGallery) return;
-    _syncingGallery = true;
+    if (_syncingPassiveSources) return;
+    _syncingPassiveSources = true;
     try {
       final db = ref.read(databaseProvider);
-      final imported = await GalleryMemorySyncService.syncFromDevicePhotos(db);
-      if (imported > 0) {
+      final summary = await PassiveMemorySyncService.syncAllSources(db);
+      if (summary.hasMeaningfulChanges) {
         await ref.read(eventsProvider.notifier).loadEvents();
         if (mounted) {
+          final sourceBreakdown = summary.importedBySource.entries
+              .map((e) => '${e.value} ${e.key.label.toLowerCase()}')
+              .join(', ');
           showAppToast(
             context,
-            '$imported photo ${imported == 1 ? 'memory' : 'memories'} imported from gallery',
+            'Imported ${summary.imported} memories${summary.merged > 0 ? ' and merged ${summary.merged}' : ''}'
+            '${sourceBreakdown.isNotEmpty ? ' ($sourceBreakdown)' : ''}',
             type: AppToastType.success,
           );
         }
       }
     } finally {
-      _syncingGallery = false;
+      _syncingPassiveSources = false;
     }
+  }
+
+  Future<void> _showPassiveSourceSettings() async {
+    final current = await PassiveMemorySyncService.getEnabledSources();
+    if (!mounted) return;
+    final selected = Map<MemorySourceType, bool>.from(current);
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (context, setLocalState) => AlertDialog(
+            title: const Text('Passive source privacy controls'),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: selected.entries.map((entry) {
+                  return SwitchListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: Text(entry.key.label),
+                    subtitle: Text(entry.value ? 'Enabled' : 'Disabled'),
+                    value: entry.value,
+                    onChanged: (next) {
+                      setLocalState(() {
+                        selected[entry.key] = next;
+                      });
+                    },
+                  );
+                }).toList(),
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(),
+                child: const Text('Cancel'),
+              ),
+              FilledButton(
+                onPressed: () async {
+                  for (final item in selected.entries) {
+                    await PassiveMemorySyncService.setSourceEnabled(item.key, item.value);
+                  }
+                  if (mounted) {
+                    Navigator.of(dialogContext).pop();
+                  }
+                },
+                child: const Text('Save'),
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   bool _handleScrollNotification(ScrollNotification notification) {
@@ -199,6 +255,11 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen>
       ),
       actions: [
         IconButton(
+          tooltip: 'Passive source controls',
+          icon: const Icon(Icons.settings_outlined),
+          onPressed: _showPassiveSourceSettings,
+        ),
+        IconButton(
           tooltip: viewMode == TimelineViewMode.linear
               ? 'Switch to grid view'
               : 'Switch to timeline view',
@@ -221,7 +282,7 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen>
             return const EmptyState(
               icon: Iconsax.clock,
               title: 'No memories yet',
-              subtitle: 'Tap + to capture your first memory',
+              subtitle: 'Passive import runs in background. Tap + for manual fallback.',
             );
           }
 
@@ -354,4 +415,3 @@ class _JourneyAppBarHeader extends StatelessWidget {
     );
   }
 }
-

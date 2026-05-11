@@ -11,6 +11,12 @@ class LifeEvent {
   final double? longitude;
   final String? locationName;
   final int? phaseId;
+  final String sourceType;
+  final String? sourceExternalId;
+  final String? sourceHash;
+  final double sourceConfidence;
+  final DateTime? importedAt;
+  final String syncState;
 
   const LifeEvent({
     this.id,
@@ -25,6 +31,12 @@ class LifeEvent {
     this.longitude,
     this.locationName,
     this.phaseId,
+    this.sourceType = 'manual',
+    this.sourceExternalId,
+    this.sourceHash,
+    this.sourceConfidence = 1.0,
+    this.importedAt,
+    this.syncState = 'manual',
   });
 
   Map<String, dynamic> toMap() {
@@ -41,6 +53,12 @@ class LifeEvent {
       'longitude': longitude,
       'location_name': locationName,
       'phase_id': phaseId,
+      'source_type': sourceType,
+      'source_external_id': sourceExternalId,
+      'source_hash': sourceHash,
+      'source_confidence': sourceConfidence,
+      'imported_at': importedAt?.millisecondsSinceEpoch,
+      'sync_state': syncState,
     };
   }
 
@@ -58,6 +76,18 @@ class LifeEvent {
       longitude: (map['longitude'] as num?)?.toDouble(),
       locationName: map['location_name'] as String?,
       phaseId: map['phase_id'] as int?,
+      sourceType: (map['source_type'] as String?)?.trim().isNotEmpty == true
+          ? (map['source_type'] as String)
+          : 'manual',
+      sourceExternalId: map['source_external_id'] as String?,
+      sourceHash: map['source_hash'] as String?,
+      sourceConfidence: (map['source_confidence'] as num?)?.toDouble() ?? 1.0,
+      importedAt: (map['imported_at'] as int?) != null
+          ? DateTime.fromMillisecondsSinceEpoch(map['imported_at'] as int)
+          : null,
+      syncState: (map['sync_state'] as String?)?.trim().isNotEmpty == true
+          ? (map['sync_state'] as String)
+          : 'manual',
     );
   }
 
@@ -79,6 +109,12 @@ class LifeEvent {
     double? longitude,
     String? locationName,
     int? phaseId,
+    String? sourceType,
+    String? sourceExternalId,
+    String? sourceHash,
+    double? sourceConfidence,
+    DateTime? importedAt,
+    String? syncState,
   }) {
     return LifeEvent(
       id: id ?? this.id,
@@ -93,6 +129,12 @@ class LifeEvent {
       longitude: longitude ?? this.longitude,
       locationName: locationName ?? this.locationName,
       phaseId: phaseId ?? this.phaseId,
+      sourceType: sourceType ?? this.sourceType,
+      sourceExternalId: sourceExternalId ?? this.sourceExternalId,
+      sourceHash: sourceHash ?? this.sourceHash,
+      sourceConfidence: sourceConfidence ?? this.sourceConfidence,
+      importedAt: importedAt ?? this.importedAt,
+      syncState: syncState ?? this.syncState,
     );
   }
 }

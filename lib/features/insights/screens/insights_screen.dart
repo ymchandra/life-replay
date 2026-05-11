@@ -185,11 +185,13 @@ class _AskTimelineTabState extends ConsumerState<_AskTimelineTab> {
       final events = await db.getEvents();
       final validEventIds = events.where((e) => e.id != null).map((e) => e.id!).toList();
       final tagsByEventId = await db.getTagsForEvents(validEventIds);
+      final sourceTypesByEventId = await db.getSourceTypesForEvents(validEventIds);
 
       final answer = OnDeviceLifeQa.answer(
         question,
         events: events,
         tagsByEventId: tagsByEventId,
+        sourceTypesByEventId: sourceTypesByEventId,
       );
 
       if (!mounted) return;
@@ -296,6 +298,11 @@ class _AskTimelineTabState extends ConsumerState<_AskTimelineTab> {
                     _AskStatChip(label: 'Photos', value: '${_result!.photoCount}'),
                     _AskStatChip(label: 'Texts', value: '${_result!.textCount}'),
                   ],
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  _result!.provenanceSummary,
+                  style: context.appText.labelSmall?.copyWith(color: cs.onSurfaceVariant),
                 ),
               ],
             ),

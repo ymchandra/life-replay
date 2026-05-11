@@ -44,7 +44,7 @@ void main() {
           title: 'Project planning',
           content: 'Sprint planning with the team.',
           mood: 3,
-          timestamp: DateTime(2020, 2, 12, 13, 00),
+          timestamp: DateTime(2020, 2, 12, 13, 0),
           location: 'Boston',
         ),
       ];

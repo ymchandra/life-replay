@@ -302,9 +302,11 @@ class OnDeviceLifeQa {
     final lower = _normalize(text);
 
     if (lower.contains('last week')) {
-      final end = DateTime(now.year, now.month, now.day, 23, 59, 59, 999);
-      final start = end.subtract(const Duration(days: 6));
-      return (start: DateTime(start.year, start.month, start.day), end: end);
+      final today = DateTime(now.year, now.month, now.day);
+      final startOfThisWeek = today.subtract(Duration(days: today.weekday - DateTime.monday));
+      final start = startOfThisWeek.subtract(const Duration(days: 7));
+      final end = startOfThisWeek.subtract(const Duration(milliseconds: 1));
+      return (start: start, end: end);
     }
     if (lower.contains('last month')) {
       final firstOfCurrent = DateTime(now.year, now.month, 1);

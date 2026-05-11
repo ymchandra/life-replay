@@ -43,7 +43,7 @@ class LifeQuestionAnswer {
 
   double get averageMood {
     if (matchedEvents.isEmpty) return 0;
-    final total = matchedEvents.fold<int>(0, (sum, e) => sum + e.mood);
+    final total = matchedEvents.fold<double>(0, (sum, e) => sum + e.mood);
     return total / matchedEvents.length;
   }
 }
@@ -264,7 +264,8 @@ class OnDeviceLifeQa {
     required DateTime? inferredStart,
     required DateTime? inferredEnd,
   }) {
-    final avgMood = matchedEvents.fold<int>(0, (sum, e) => sum + e.mood) / matchedEvents.length;
+    final avgMood =
+        matchedEvents.fold<double>(0, (sum, e) => sum + e.mood) / matchedEvents.length;
     final moodLabel = _moodLabel(avgMood);
     final photos = matchedEvents.where((e) => e.hasPhoto).length;
     final videos = matchedEvents.where((e) => e.hasVideo).length;
@@ -366,9 +367,9 @@ class OnDeviceLifeQa {
     var candidate = input.trim();
     candidate = candidate
         .replaceAll(',', ' ')
-        .replaceAll(RegExp(r'\s+'), ' ')
         .replaceAllMapped(RegExp(r'(\d)([A-Za-z])'), (m) => '${m.group(1)} ${m.group(2)}')
         .replaceAllMapped(RegExp(r'([A-Za-z])(\d)'), (m) => '${m.group(1)} ${m.group(2)}')
+        .replaceAll(RegExp(r'\s+'), ' ')
         .trim();
 
     for (final pattern in _supportedDateFormats) {

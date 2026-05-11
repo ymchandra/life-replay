@@ -183,13 +183,8 @@ class _AskTimelineTabState extends ConsumerState<_AskTimelineTab> {
     try {
       final db = ref.read(databaseProvider);
       final events = await db.getEvents();
-      final taggable = events.where((e) => e.id != null).toList();
-      final tags = await Future.wait(
-        taggable.map((e) async => MapEntry(e.id!, await db.getTagsForEvent(e.id!))),
-      );
-      final tagsByEventId = <int, List<String>>{
-        for (final entry in tags) entry.key: entry.value,
-      };
+      final taggableIds = events.where((e) => e.id != null).map((e) => e.id!).toList();
+      final tagsByEventId = await db.getTagsForEvents(taggableIds);
 
       final answer = OnDeviceLifeQa.answer(
         question,
@@ -314,33 +309,40 @@ class _AskTimelineTabState extends ConsumerState<_AskTimelineTab> {
                   Text('Top matching memories', style: context.appText.titleSmall),
                   const SizedBox(height: 8),
                   ..._result!.highlights.map(
-                    (item) => Padding(
-                      padding: const EdgeInsets.only(bottom: 8),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Icon(Iconsax.record, size: 10),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  item.title,
-                                  style: context.appText.bodySmall
-                                      ?.copyWith(fontWeight: FontWeight.w600),
-                                ),
-                                Text(
-                                  '${DateFormat('MMM d, yyyy').format(item.timestamp)}${item.locationName == null || item.locationName!.isEmpty ? '' : ' · ${item.locationName}'} · mood ${item.mood}/5',
-                                  style: context.appText.labelSmall
-                                      ?.copyWith(color: cs.onSurfaceVariant),
-                                ),
-                              ],
+                    (item) {
+                      final locationSuffix = (item.locationName == null || item.locationName!.isEmpty)
+                          ? ''
+                          : ' · ${item.locationName}';
+                      final subtitle =
+                          '${DateFormat('MMM d, yyyy').format(item.timestamp)}$locationSuffix · mood ${item.mood}/5';
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Icon(Iconsax.record, size: 10),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    item.title,
+                                    style: context.appText.bodySmall
+                                        ?.copyWith(fontWeight: FontWeight.w600),
+                                  ),
+                                  Text(
+                                    subtitle,
+                                    style: context.appText.labelSmall
+                                        ?.copyWith(color: cs.onSurfaceVariant),
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
-                    ),
+                          ],
+                        ),
+                      );
+                    },
                   ),
                 ],
               ),

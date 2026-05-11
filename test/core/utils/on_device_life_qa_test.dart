@@ -64,8 +64,12 @@ void main() {
       expect(result.inferredStart, DateTime(2020, 2, 12));
       expect(result.photoCount, 1);
       expect(result.averageMood, 5);
-      expect(result.answer.toLowerCase(), contains('average mood'));
-      expect(result.answer.toLowerCase(), contains('new york'));
+      final answer = result.answer.toLowerCase();
+      expect(answer, contains('i found 1 matching memories'));
+      expect(answer, contains('on feb 12, 2020'));
+      expect(answer, contains('in new york'));
+      expect(answer, contains('average mood was 5.0/5'));
+      expect(answer, contains('media snapshot: 1 text notes, 1 photos, 0 videos, and 0 voice notes'));
     });
 
     test('supports explicit date ranges', () {

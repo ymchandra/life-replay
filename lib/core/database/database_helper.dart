@@ -241,6 +241,25 @@ class DatabaseHelper {
     return maps.map((m) => m['tag'] as String).toList();
   }
 
+  Future<Map<int, List<String>>> getTagsForEvents(List<int> eventIds) async {
+    if (eventIds.isEmpty) return const {};
+    final db = await database;
+    final placeholders = List.filled(eventIds.length, '?').join(',');
+    final rows = await db.rawQuery(
+      'SELECT event_id, tag FROM event_tags WHERE event_id IN ($placeholders) ORDER BY event_id ASC',
+      eventIds,
+    );
+
+    final tagsByEventId = <int, List<String>>{};
+    for (final row in rows) {
+      final eventId = row['event_id'] as int?;
+      final tag = row['tag'] as String?;
+      if (eventId == null || tag == null) continue;
+      tagsByEventId.putIfAbsent(eventId, () => <String>[]).add(tag);
+    }
+    return tagsByEventId;
+  }
+
   Future<Map<String, int>> getTopTags(int limit) async {
     final db = await database;
     final result = await db.rawQuery('''

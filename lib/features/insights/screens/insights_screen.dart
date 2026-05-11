@@ -12,6 +12,7 @@ import 'package:life_replay/core/providers/database_provider.dart';
 import 'package:life_replay/core/providers/phases_provider.dart';
 import 'package:life_replay/core/theme/app_theme.dart';
 import 'package:life_replay/core/theme/context_theme.dart';
+import 'package:life_replay/core/utils/on_device_life_qa.dart';
 import 'package:life_replay/shared/widgets/app_scaffold.dart';
 import 'package:life_replay/shared/widgets/empty_state.dart';
 import 'package:life_replay/shared/widgets/glassmorphism_card.dart';
@@ -44,7 +45,7 @@ class InsightsScreen extends ConsumerWidget {
     final cs = context.appColors;
 
     return DefaultTabController(
-      length: 2,
+      length: 3,
       child: AppScaffold(
         title: 'Insights',
         body: Column(
@@ -58,6 +59,7 @@ class InsightsScreen extends ConsumerWidget {
                 tabs: const [
                   Tab(text: 'Analytics'),
                   Tab(text: 'Chapters'),
+                  Tab(text: 'Ask'),
                 ],
               ),
             ),
@@ -66,6 +68,7 @@ class InsightsScreen extends ConsumerWidget {
                 children: [
                   _AnalyticsTab(ref: ref),
                   _ChaptersTab(ref: ref),
+                  const _AskTimelineTab(),
                 ],
               ),
             ),
@@ -140,6 +143,237 @@ class _ChaptersTab extends ConsumerWidget {
               _PhaseCard(phase: phases[index], animIndex: index),
         );
       },
+    );
+  }
+}
+
+class _AskTimelineTab extends ConsumerStatefulWidget {
+  const _AskTimelineTab();
+
+  @override
+  ConsumerState<_AskTimelineTab> createState() => _AskTimelineTabState();
+}
+
+class _AskTimelineTabState extends ConsumerState<_AskTimelineTab> {
+  final TextEditingController _questionController = TextEditingController();
+  bool _isLoading = false;
+  String? _error;
+  LifeQuestionAnswer? _result;
+
+  @override
+  void dispose() {
+    _questionController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _askQuestion() async {
+    final question = _questionController.text.trim();
+    if (question.isEmpty) {
+      setState(() {
+        _error = 'Please enter a question about your timeline.';
+      });
+      return;
+    }
+
+    setState(() {
+      _error = null;
+      _isLoading = true;
+    });
+
+    try {
+      final db = ref.read(databaseProvider);
+      final events = await db.getEvents();
+      final validEventIds = events.where((e) => e.id != null).map((e) => e.id!).toList();
+      final tagsByEventId = await db.getTagsForEvents(validEventIds);
+
+      final answer = OnDeviceLifeQa.answer(
+        question,
+        events: events,
+        tagsByEventId: tagsByEventId,
+      );
+
+      if (!mounted) return;
+      setState(() {
+        _result = answer;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _error = 'Failed to run on-device Q&A: $e';
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = context.appColors;
+
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
+      children: [
+        const _SectionTitle(title: 'Ask your life timeline')
+            .animate()
+            .fadeIn(duration: 300.ms),
+        const SizedBox(height: 8),
+        Text(
+          'Ask about dates, ranges, locations, photos, or text memories. Answers stay on-device.',
+          style: context.appText.bodySmall?.copyWith(color: cs.onSurfaceVariant),
+        ).animate(delay: 60.ms).fadeIn(duration: 320.ms),
+        const SizedBox(height: 12),
+        GlassmorphismCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              TextField(
+                controller: _questionController,
+                minLines: 2,
+                maxLines: 4,
+                textInputAction: TextInputAction.done,
+                onSubmitted: (_) => _askQuestion(),
+                decoration: const InputDecoration(
+                  hintText:
+                      'Example: How was I doing during workouts on 12 Feb 2020 in New York?',
+                ),
+              ),
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton.icon(
+                  onPressed: _isLoading ? null : _askQuestion,
+                  icon: _isLoading
+                      ? const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.auto_awesome),
+                  label: Text(_isLoading ? 'Thinking...' : 'Ask my timeline'),
+                ),
+              ),
+              if (_error != null) ...[
+                const SizedBox(height: 8),
+                Text(
+                  _error!,
+                  style: context.appText.labelSmall?.copyWith(color: cs.error),
+                ),
+              ],
+            ],
+          ),
+        ).animate(delay: 120.ms).fadeIn(duration: 340.ms),
+        if (_result != null) ...[
+          const SizedBox(height: 12),
+          GlassmorphismCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Answer', style: context.appText.titleSmall),
+                const SizedBox(height: 6),
+                Text(
+                  _result!.answer,
+                  style: context.appText.bodyMedium,
+                ),
+                const SizedBox(height: 10),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    _AskStatChip(
+                      label: 'Matches',
+                      value: '${_result!.matchedEvents.length}',
+                    ),
+                    _AskStatChip(
+                      label: 'Avg mood',
+                      value: _result!.averageMood == 0
+                          ? '-'
+                          : '${_result!.averageMood.toStringAsFixed(1)}/5',
+                    ),
+                    _AskStatChip(label: 'Photos', value: '${_result!.photoCount}'),
+                    _AskStatChip(label: 'Texts', value: '${_result!.textCount}'),
+                  ],
+                ),
+              ],
+            ),
+          ).animate(delay: 180.ms).fadeIn(duration: 340.ms),
+          if (_result!.highlights.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            GlassmorphismCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Top matching memories', style: context.appText.titleSmall),
+                  const SizedBox(height: 8),
+                  ..._result!.highlights.map(
+                    (item) {
+                      final locationSuffix =
+                          (item.locationName?.isNotEmpty ?? false)
+                              ? ' · ${item.locationName}'
+                              : '';
+                      final subtitle =
+                          '${DateFormat('MMM d, yyyy').format(item.timestamp)}$locationSuffix · mood ${item.mood}/5';
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Icon(Iconsax.record, size: 10),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    item.title,
+                                    style: context.appText.bodySmall
+                                        ?.copyWith(fontWeight: FontWeight.w600),
+                                  ),
+                                  Text(
+                                    subtitle,
+                                    style: context.appText.labelSmall
+                                        ?.copyWith(color: cs.onSurfaceVariant),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ).animate(delay: 220.ms).fadeIn(duration: 340.ms),
+          ],
+        ],
+      ],
+    );
+  }
+}
+
+class _AskStatChip extends StatelessWidget {
+  const _AskStatChip({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = context.appColors;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: cs.primary.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Text(
+        '$label: $value',
+        style: context.appText.labelSmall?.copyWith(fontWeight: FontWeight.w600),
+      ),
     );
   }
 }
@@ -704,4 +938,3 @@ class _TimeOfDayWidget extends StatelessWidget {
     );
   }
 }
-

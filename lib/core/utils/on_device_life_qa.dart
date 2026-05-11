@@ -284,7 +284,10 @@ class OnDeviceLifeQa {
 
     return 'I found ${matchedEvents.length} matching memories$dateFragment$locationFragment$keywordFragment. '
         'Your average mood was ${avgMood.toStringAsFixed(1)}/5 ($moodLabel). '
-        'Media snapshot: $texts text notes, $photos photos, $videos videos, and $voices voice notes.';
+        'Media snapshot: $texts ${_pluralize(texts, 'text note')}, '
+        '$photos ${_pluralize(photos, 'photo')}, '
+        '$videos ${_pluralize(videos, 'video')}, and '
+        '$voices ${_pluralize(voices, 'voice note')}.';
   }
 
   static String _moodLabel(double mood) {
@@ -322,8 +325,8 @@ class OnDeviceLifeQa {
       caseSensitive: false,
     ).firstMatch(text);
     if (between != null) {
-      final startDate = _tryParseDate(between.group(1) ?? '');
-      final endDate = _tryParseDate(between.group(2) ?? '');
+      final startDate = _tryParseDate(between.group(1) ?? '', referenceNow: now);
+      final endDate = _tryParseDate(between.group(2) ?? '', referenceNow: now);
       if (startDate != null && endDate != null) {
         final start = DateTime(startDate.year, startDate.month, startDate.day);
         final end = DateTime(endDate.year, endDate.month, endDate.day, 23, 59, 59, 999);
@@ -337,7 +340,7 @@ class OnDeviceLifeQa {
       r'(?:on|during)\s+([^?.,;]+)',
       caseSensitive: false,
     ).firstMatch(text);
-    final parsedOnDate = _tryParseDate(onDateMatch?.group(1) ?? '');
+    final parsedOnDate = _tryParseDate(onDateMatch?.group(1) ?? '', referenceNow: now);
     if (parsedOnDate != null) {
       final start = DateTime(parsedOnDate.year, parsedOnDate.month, parsedOnDate.day);
       final end = DateTime(parsedOnDate.year, parsedOnDate.month, parsedOnDate.day, 23, 59, 59, 999);
@@ -347,7 +350,7 @@ class OnDeviceLifeQa {
     final anyDate = RegExp(
       r'(\d{1,2}\s*[A-Za-z]{3,9}\s*\d{2,4}|\d{4}-\d{1,2}-\d{1,2}|\d{1,2}[/-]\d{1,2}[/-]\d{2,4})',
     ).firstMatch(text);
-    final parsedAnyDate = _tryParseDate(anyDate?.group(1) ?? '');
+    final parsedAnyDate = _tryParseDate(anyDate?.group(1) ?? '', referenceNow: now);
     if (parsedAnyDate != null) {
       final start = DateTime(parsedAnyDate.year, parsedAnyDate.month, parsedAnyDate.day);
       final end = DateTime(parsedAnyDate.year, parsedAnyDate.month, parsedAnyDate.day, 23, 59, 59, 999);
@@ -357,7 +360,7 @@ class OnDeviceLifeQa {
     return null;
   }
 
-  static DateTime? _tryParseDate(String input) {
+  static DateTime? _tryParseDate(String input, {DateTime? referenceNow}) {
     if (input.trim().isEmpty) return null;
 
     var candidate = input.trim();
@@ -373,7 +376,7 @@ class OnDeviceLifeQa {
         final parsed = DateFormat(pattern).parseStrict(candidate);
         var year = parsed.year;
         if (year < 100) {
-          final currentYear = DateTime.now().year;
+          final currentYear = (referenceNow ?? DateTime.now()).year;
           final currentCentury = (currentYear ~/ 100) * 100;
           year = currentCentury + year;
           if (year > currentYear + 50) {
@@ -464,11 +467,19 @@ class OnDeviceLifeQa {
     return text.toLowerCase().replaceAll(RegExp(r'\s+'), ' ').trim();
   }
 
+  static String _pluralize(int count, String singular) {
+    return count == 1 ? singular : '${singular}s';
+  }
+
   static String _titleCase(String text) {
     final words = text
         .split(RegExp(r'\s+'))
         .where((w) => w.trim().isNotEmpty)
-        .map((w) => '${w[0].toUpperCase()}${w.substring(1)}');
+        .map((w) {
+      final clean = w.trim();
+      if (clean.length == 1) return clean.toUpperCase();
+      return '${clean[0].toUpperCase()}${clean.substring(1)}';
+    });
     return words.join(' ');
   }
 }

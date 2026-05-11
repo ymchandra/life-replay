@@ -69,7 +69,7 @@ void main() {
       expect(answer, contains('on feb 12, 2020'));
       expect(answer, contains('in new york'));
       expect(answer, contains('average mood was 5.0/5'));
-      expect(answer, contains('media snapshot: 1 text notes, 1 photos, 0 videos, and 0 voice notes'));
+      expect(answer, contains('media snapshot: 1 text note, 1 photo, 0 videos, and 0 voice notes'));
     });
 
     test('supports explicit date ranges', () {

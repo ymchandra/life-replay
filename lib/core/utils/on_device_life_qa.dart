@@ -24,6 +24,7 @@ class LifeQuestionAnswer {
   final DateTime? inferredEnd;
   final String? inferredLocation;
   final List<LifeMemoryHighlight> highlights;
+  final Map<String, int> sourceCounts;
 
   const LifeQuestionAnswer({
     required this.question,
@@ -34,6 +35,7 @@ class LifeQuestionAnswer {
     required this.inferredEnd,
     required this.inferredLocation,
     required this.highlights,
+    required this.sourceCounts,
   });
 
   int get photoCount => matchedEvents.where((e) => e.hasPhoto).length;
@@ -45,6 +47,17 @@ class LifeQuestionAnswer {
     if (matchedEvents.isEmpty) return 0;
     final total = matchedEvents.fold<double>(0, (sum, e) => sum + e.mood);
     return total / matchedEvents.length;
+  }
+
+  String get provenanceSummary {
+    if (sourceCounts.isEmpty) return 'Based on on-device memories.';
+    final ordered = sourceCounts.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+    final top = ordered
+        .take(3)
+        .map((e) => '${e.value} ${OnDeviceLifeQa._sourceLabel(e.key, e.value)}')
+        .join(', ');
+    return 'Based on ${matchedEvents.length} memories from $top.';
   }
 }
 
@@ -121,6 +134,7 @@ class OnDeviceLifeQa {
     String question, {
     required List<LifeEvent> events,
     Map<int, List<String>> tagsByEventId = const {},
+    Map<int, List<String>> sourceTypesByEventId = const {},
     DateTime? now,
   }) {
     final trimmedQuestion = question.trim();
@@ -135,6 +149,7 @@ class OnDeviceLifeQa {
         inferredEnd: null,
         inferredLocation: null,
         highlights: const [],
+        sourceCounts: const {},
       );
     }
 
@@ -142,6 +157,8 @@ class OnDeviceLifeQa {
     final dateRange = _extractDateRange(trimmedQuestion, effectiveNow);
     final location = _extractLocation(trimmedQuestion);
     final keywords = _extractKeywords(trimmedQuestion, location: location);
+    final mediaIntents = _extractMediaIntents(trimmedQuestion);
+    final sourceIntents = _extractSourceTypeHints(trimmedQuestion);
 
     final scored = <({LifeEvent event, int score, Set<String> keywordHits})>[];
 
@@ -158,6 +175,9 @@ class OnDeviceLifeQa {
               .map((t) => t.toLowerCase())
               .toList()
           : const <String>[];
+      final eventSourceTypes = event.id != null
+          ? (sourceTypesByEventId[event.id!] ?? <String>[event.sourceType])
+          : <String>[event.sourceType];
 
       var score = 0;
       final keywordHits = <String>{};
@@ -176,6 +196,22 @@ class OnDeviceLifeQa {
           continue;
         }
         score += 4;
+      }
+
+      final matchesMediaIntent = _matchesMediaIntent(event, mediaIntents);
+      if (mediaIntents.isNotEmpty && !matchesMediaIntent) {
+        continue;
+      }
+      if (mediaIntents.isNotEmpty && matchesMediaIntent) {
+        score += 3;
+      }
+
+      final matchesSourceIntent = _matchesSourceIntent(eventSourceTypes, sourceIntents);
+      if (sourceIntents.isNotEmpty && !matchesSourceIntent) {
+        continue;
+      }
+      if (sourceIntents.isNotEmpty && matchesSourceIntent) {
+        score += 3;
       }
 
       for (final keyword in keywords) {
@@ -218,6 +254,7 @@ class OnDeviceLifeQa {
         inferredEnd: dateRange?.end,
         inferredLocation: location,
         highlights: const [],
+        sourceCounts: const {},
       );
     }
 
@@ -233,12 +270,18 @@ class OnDeviceLifeQa {
         )
         .toList();
 
+    final sourceCounts = _buildSourceCounts(
+      matchedEvents,
+      sourceTypesByEventId: sourceTypesByEventId,
+    );
+
     final summary = _buildAnswerSummary(
       matchedEvents: matchedEvents,
       matchedKeywords: matchedKeywords.toList(),
       inferredLocation: location,
       inferredStart: dateRange?.start,
       inferredEnd: dateRange?.end,
+      sourceCounts: sourceCounts,
     );
 
     return LifeQuestionAnswer(
@@ -250,6 +293,7 @@ class OnDeviceLifeQa {
       inferredEnd: dateRange?.end,
       inferredLocation: location,
       highlights: highlights,
+      sourceCounts: sourceCounts,
     );
   }
 
@@ -259,6 +303,7 @@ class OnDeviceLifeQa {
     required String? inferredLocation,
     required DateTime? inferredStart,
     required DateTime? inferredEnd,
+    required Map<String, int> sourceCounts,
   }) {
     final avgMood =
         matchedEvents.fold<double>(0, (sum, e) => sum + e.mood) / matchedEvents.length;
@@ -281,13 +326,35 @@ class OnDeviceLifeQa {
     final keywordFragment = matchedKeywords.isEmpty
         ? ''
         : ' around ${matchedKeywords.take(3).join(', ')}';
+    final sourceFragment = sourceCounts.isEmpty
+        ? 'Data source: on-device memories.'
+        : 'Data source: ${sourceCounts.entries.map((e) => '${e.value} ${_sourceLabel(e.key, e.value)}').join(', ')}.';
 
     return 'I found ${matchedEvents.length} matching memories$dateFragment$locationFragment$keywordFragment. '
         'Your average mood was ${avgMood.toStringAsFixed(1)}/5 ($moodLabel). '
         'Media snapshot: $texts ${_pluralize(texts, 'text note')}, '
         '$photos ${_pluralize(photos, 'photo')}, '
         '$videos ${_pluralize(videos, 'video')}, and '
-        '$voices ${_pluralize(voices, 'voice note')}.';
+        '$voices ${_pluralize(voices, 'voice note')}. '
+        '$sourceFragment';
+  }
+
+  static Map<String, int> _buildSourceCounts(
+    List<LifeEvent> events, {
+    required Map<int, List<String>> sourceTypesByEventId,
+  }) {
+    final counts = <String, int>{};
+    for (final event in events) {
+      final sources = event.id != null
+          ? (sourceTypesByEventId[event.id!] ?? <String>[event.sourceType])
+          : <String>[event.sourceType];
+      final unique = sources.map((s) => s.trim().toLowerCase()).toSet();
+      for (final source in unique) {
+        if (source.isEmpty) continue;
+        counts[source] = (counts[source] ?? 0) + 1;
+      }
+    }
+    return counts;
   }
 
   static String _moodLabel(double mood) {
@@ -436,6 +503,58 @@ class OnDeviceLifeQa {
       }
     }
     return keywords;
+  }
+
+  static Set<String> _extractMediaIntents(String text) {
+    final lower = _normalize(text);
+    final intents = <String>{};
+    if (RegExp(r'\bphoto|picture|image|gallery\b').hasMatch(lower)) intents.add('photo');
+    if (RegExp(r'\bvideo|clip|reel\b').hasMatch(lower)) intents.add('video');
+    if (RegExp(r'\bvoice|audio|recording\b').hasMatch(lower)) intents.add('voice');
+    if (RegExp(r'\btext|note|journal|write|written\b').hasMatch(lower)) intents.add('text');
+    return intents;
+  }
+
+  static Set<String> _extractSourceTypeHints(String text) {
+    final lower = _normalize(text);
+    final hints = <String>{};
+    if (RegExp(r'\bphoto|picture|gallery\b').hasMatch(lower)) hints.add('photo');
+    if (RegExp(r'\bvideo|clip|reel\b').hasMatch(lower)) hints.add('video');
+    if (RegExp(r'\bnote|journal|text\b').hasMatch(lower)) hints.add('note');
+    if (RegExp(r'\bcontact|people|person\b').hasMatch(lower)) hints.add('contact');
+    if (RegExp(r'\bcall|phone\b').hasMatch(lower)) hints.add('call');
+    return hints;
+  }
+
+  static bool _matchesMediaIntent(LifeEvent event, Set<String> intents) {
+    if (intents.isEmpty) return true;
+    for (final intent in intents) {
+      if (intent == 'photo' && event.hasPhoto) return true;
+      if (intent == 'video' && event.hasVideo) return true;
+      if (intent == 'voice' && event.hasVoiceNote) return true;
+      if (intent == 'text' && event.hasText) return true;
+    }
+    return false;
+  }
+
+  static bool _matchesSourceIntent(List<String> sourceTypes, Set<String> intents) {
+    if (intents.isEmpty) return true;
+    final normalized = sourceTypes.map((s) => s.toLowerCase()).toSet();
+    for (final hint in intents) {
+      if (normalized.contains(hint)) return true;
+    }
+    return false;
+  }
+
+  static String _sourceLabel(String sourceKey, int count) {
+    final normalized = sourceKey.trim().toLowerCase();
+    final human = _titleCase(normalized.replaceAll('_', ' '));
+    if (count == 1) {
+      if (human.endsWith('s')) return human.substring(0, human.length - 1);
+      return human;
+    }
+    if (human.endsWith('s')) return human;
+    return '${human}s';
   }
 
   static bool _keywordMatches(String keyword, String candidate) {

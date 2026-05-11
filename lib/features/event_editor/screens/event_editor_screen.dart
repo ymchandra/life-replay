@@ -496,6 +496,12 @@ class _EventEditorScreenState extends ConsumerState<EventEditorScreen>
       latitude: _latitude,
       longitude: _longitude,
       locationName: _locationName,
+      sourceType: _originalEvent?.sourceType ?? 'manual',
+      sourceExternalId: _originalEvent?.sourceExternalId,
+      sourceHash: _originalEvent?.sourceHash,
+      sourceConfidence: _originalEvent?.sourceConfidence ?? 1.0,
+      importedAt: _originalEvent?.importedAt,
+      syncState: _originalEvent?.syncState ?? 'manual',
     );
 
     try {
@@ -881,4 +887,3 @@ class _ToolbarIconButton extends StatelessWidget {
     );
   }
 }
-

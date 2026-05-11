@@ -158,5 +158,40 @@ void main() {
       expect(result.matchedEvents.length, 1);
       expect(result.matchedKeywords, contains('workouts'));
     });
+
+    test('applies media/source intent filtering and emits provenance summary', () {
+      final events = [
+        _event(
+          id: 1,
+          title: 'Photo walk',
+          content: 'Captured a sunset.',
+          mood: 4,
+          timestamp: DateTime(2024, 1, 1),
+          photo: '/tmp/a.jpg',
+        ),
+        _event(
+          id: 2,
+          title: 'Voice reflection',
+          content: 'Audio note before sleep.',
+          mood: 3,
+          timestamp: DateTime(2024, 1, 2),
+          voice: '/tmp/b.m4a',
+        ),
+      ];
+
+      final result = OnDeviceLifeQa.answer(
+        'Show my photo memories',
+        events: events,
+        sourceTypesByEventId: const {
+          1: ['photo'],
+          2: ['call'],
+        },
+      );
+
+      expect(result.matchedEvents.length, 1);
+      expect(result.matchedEvents.first.id, 1);
+      expect(result.sourceCounts['photo'], 1);
+      expect(result.provenanceSummary.toLowerCase(), contains('based on 1 memories'));
+    });
   });
 }

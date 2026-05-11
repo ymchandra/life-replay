@@ -16,6 +16,12 @@ void main() {
     latitude: 37.7749,
     longitude: -122.4194,
     phaseId: 2,
+    sourceType: 'photo',
+    sourceExternalId: 'asset-123',
+    sourceHash: 'hash-123',
+    sourceConfidence: 0.78,
+    importedAt: DateTime(2024, 6, 15, 11, 00),
+    syncState: 'synced',
   );
 
   group('LifeEvent', () {
@@ -32,6 +38,15 @@ void main() {
       expect(map['latitude'], 37.7749);
       expect(map['longitude'], -122.4194);
       expect(map['phase_id'], 2);
+      expect(map['source_type'], 'photo');
+      expect(map['source_external_id'], 'asset-123');
+      expect(map['source_hash'], 'hash-123');
+      expect(map['source_confidence'], 0.78);
+      expect(
+        map['imported_at'],
+        DateTime(2024, 6, 15, 11, 00).millisecondsSinceEpoch,
+      );
+      expect(map['sync_state'], 'synced');
     });
 
     test('toMap omits id when null', () {
@@ -58,6 +73,12 @@ void main() {
       expect(restored.latitude, event.latitude);
       expect(restored.longitude, event.longitude);
       expect(restored.phaseId, event.phaseId);
+      expect(restored.sourceType, event.sourceType);
+      expect(restored.sourceExternalId, event.sourceExternalId);
+      expect(restored.sourceHash, event.sourceHash);
+      expect(restored.sourceConfidence, event.sourceConfidence);
+      expect(restored.importedAt, event.importedAt);
+      expect(restored.syncState, event.syncState);
     });
 
     test('copyWith overrides specified fields', () {
@@ -69,6 +90,7 @@ void main() {
       expect(copy.timestamp, event.timestamp);
       expect(copy.videoPath, event.videoPath);
       expect(copy.voiceNotePath, event.voiceNotePath);
+      expect(copy.sourceType, event.sourceType);
     });
 
     test('copyWith preserves all fields when nothing overridden', () {
@@ -76,6 +98,38 @@ void main() {
       expect(copy.title, event.title);
       expect(copy.mood, event.mood);
       expect(copy.photoPath, event.photoPath);
+    });
+
+    test('fromMap applies defaults for missing source fields', () {
+      final restored = LifeEvent.fromMap({
+        'id': 9,
+        'title': 'Legacy',
+        'content': 'old',
+        'mood': 3,
+        'timestamp': timestamp.millisecondsSinceEpoch,
+      });
+
+      expect(restored.sourceType, 'manual');
+      expect(restored.sourceConfidence, 1.0);
+      expect(restored.syncState, 'manual');
+      expect(restored.importedAt, isNull);
+    });
+
+    test('fromMap applies defaults for blank source fields', () {
+      final restored = LifeEvent.fromMap({
+        'id': 7,
+        'title': 'Legacy blank',
+        'content': 'old',
+        'mood': 2,
+        'timestamp': timestamp.millisecondsSinceEpoch,
+        'source_type': '   ',
+        'sync_state': '',
+        'source_confidence': null,
+      });
+
+      expect(restored.sourceType, 'manual');
+      expect(restored.syncState, 'manual');
+      expect(restored.sourceConfidence, 1.0);
     });
   });
 }

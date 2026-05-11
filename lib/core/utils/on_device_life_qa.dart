@@ -53,7 +53,10 @@ class LifeQuestionAnswer {
     if (sourceCounts.isEmpty) return 'Based on on-device memories.';
     final ordered = sourceCounts.entries.toList()
       ..sort((a, b) => b.value.compareTo(a.value));
-    final top = ordered.take(3).map((e) => '${e.value} ${e.key}').join(', ');
+    final top = ordered
+        .take(3)
+        .map((e) => '${e.value} ${OnDeviceLifeQa._sourceLabel(e.key, e.value)}')
+        .join(', ');
     return 'Based on ${matchedEvents.length} memories from $top.';
   }
 }
@@ -325,7 +328,7 @@ class OnDeviceLifeQa {
         : ' around ${matchedKeywords.take(3).join(', ')}';
     final sourceFragment = sourceCounts.isEmpty
         ? 'Data source: on-device memories.'
-        : 'Data source: ${sourceCounts.entries.map((e) => '${e.value} ${_titleCase(e.key)}').join(', ')}.';
+        : 'Data source: ${sourceCounts.entries.map((e) => '${e.value} ${_sourceLabel(e.key, e.value)}').join(', ')}.';
 
     return 'I found ${matchedEvents.length} matching memories$dateFragment$locationFragment$keywordFragment. '
         'Your average mood was ${avgMood.toStringAsFixed(1)}/5 ($moodLabel). '
@@ -541,6 +544,17 @@ class OnDeviceLifeQa {
       if (normalized.contains(hint)) return true;
     }
     return false;
+  }
+
+  static String _sourceLabel(String sourceKey, int count) {
+    final normalized = sourceKey.trim().toLowerCase();
+    final human = _titleCase(normalized.replaceAll('_', ' '));
+    if (count == 1) {
+      if (human.endsWith('s')) return human.substring(0, human.length - 1);
+      return human;
+    }
+    if (human.endsWith('s')) return human;
+    return '${human}s';
   }
 
   static bool _keywordMatches(String keyword, String candidate) {

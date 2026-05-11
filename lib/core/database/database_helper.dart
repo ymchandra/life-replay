@@ -136,7 +136,8 @@ class DatabaseHelper {
       await db.execute(
         "INSERT INTO event_sources(event_id, source_type, external_id, source_hash, confidence, imported_at, sync_state, metadata_json) "
         "SELECT id, COALESCE(source_type, 'manual'), source_external_id, source_hash, COALESCE(source_confidence, 1.0), imported_at, COALESCE(sync_state, 'manual'), '' "
-        "FROM life_events",
+        "FROM life_events e "
+        "WHERE NOT EXISTS (SELECT 1 FROM event_sources s WHERE s.event_id = e.id)",
       );
       await db.execute('CREATE INDEX IF NOT EXISTS idx_events_source_external ON life_events (source_type, source_external_id)');
       await db.execute('CREATE INDEX IF NOT EXISTS idx_events_source_hash ON life_events (source_hash)');

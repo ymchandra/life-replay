@@ -41,7 +41,7 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _syncGalleryMemories();
+      _syncPassiveSources();
     });
   }
 
@@ -54,11 +54,11 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      _syncGalleryMemories();
+      _syncPassiveSources();
     }
   }
 
-  Future<void> _syncGalleryMemories() async {
+  Future<void> _syncPassiveSources() async {
     if (_syncingPassiveSources) return;
     _syncingPassiveSources = true;
     try {
@@ -68,7 +68,7 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen>
         await ref.read(eventsProvider.notifier).loadEvents();
         if (mounted) {
           final sourceBreakdown = summary.importedBySource.entries
-              .map((e) => '${e.value} ${_pluralizeSourceLabel(e.key.label, e.value)}')
+              .map((e) => '${e.value} ${_sourceLabelForCount(e.key.label, e.value)}')
               .join(', ');
           showAppToast(
             context,
@@ -134,10 +134,18 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen>
     );
   }
 
-  String _pluralizeSourceLabel(String label, int count) {
-    if (count == 1) return label.toLowerCase();
-    if (label.endsWith('s')) return label.toLowerCase();
-    return '${label.toLowerCase()}s';
+  String _sourceLabelForCount(String label, int count) {
+    final lower = label.toLowerCase();
+    if (lower == 'notes/text') {
+      return count == 1 ? 'note/text' : 'notes/text';
+    }
+    if (count == 1 && lower.endsWith('s')) {
+      return lower.substring(0, lower.length - 1);
+    }
+    if (count != 1 && !lower.endsWith('s')) {
+      return '${lower}s';
+    }
+    return lower;
   }
 
   bool _handleScrollNotification(ScrollNotification notification) {

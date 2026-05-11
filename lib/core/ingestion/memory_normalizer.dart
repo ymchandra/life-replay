@@ -86,7 +86,7 @@ class MemoryNormalizer {
   }
 
   static String _fallbackTitle(RawMemorySignal signal) {
-    final dateLabel = DateFormat('yyyy-MM-dd').format(signal.capturedAt);
+    final dateLabel = DateFormat('MMM d, yyyy').format(signal.capturedAt);
     return '${signal.sourceType.label} memory · $dateLabel';
   }
 

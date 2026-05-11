@@ -114,5 +114,22 @@ void main() {
       expect(restored.syncState, 'manual');
       expect(restored.importedAt, isNull);
     });
+
+    test('fromMap applies defaults for blank source fields', () {
+      final restored = LifeEvent.fromMap({
+        'id': 7,
+        'title': 'Legacy blank',
+        'content': 'old',
+        'mood': 2,
+        'timestamp': timestamp.millisecondsSinceEpoch,
+        'source_type': '   ',
+        'sync_state': '',
+        'source_confidence': null,
+      });
+
+      expect(restored.sourceType, 'manual');
+      expect(restored.syncState, 'manual');
+      expect(restored.sourceConfidence, 1.0);
+    });
   });
 }

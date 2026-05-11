@@ -1,3 +1,4 @@
+import 'package:intl/intl.dart';
 import 'package:life_replay/core/ingestion/passive_ingestion.dart';
 import 'package:life_replay/core/models/life_event.dart';
 import 'package:life_replay/core/utils/on_device_event_inference.dart';
@@ -85,9 +86,8 @@ class MemoryNormalizer {
   }
 
   static String _fallbackTitle(RawMemorySignal signal) {
-    final month = signal.capturedAt.month.toString().padLeft(2, '0');
-    final day = signal.capturedAt.day.toString().padLeft(2, '0');
-    return '${signal.sourceType.label} memory · ${signal.capturedAt.year}-$month-$day';
+    final dateLabel = DateFormat('yyyy-MM-dd').format(signal.capturedAt);
+    return '${signal.sourceType.label} memory · $dateLabel';
   }
 
   static String _buildContent(RawMemorySignal signal) {

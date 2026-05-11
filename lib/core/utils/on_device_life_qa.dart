@@ -325,7 +325,7 @@ class OnDeviceLifeQa {
         : ' around ${matchedKeywords.take(3).join(', ')}';
     final sourceFragment = sourceCounts.isEmpty
         ? 'Data source: on-device memories.'
-        : 'Data source: ${sourceCounts.entries.map((e) => '${e.value} ${e.key}').join(', ')}.';
+        : 'Data source: ${sourceCounts.entries.map((e) => '${e.value} ${_titleCase(e.key)}').join(', ')}.';
 
     return 'I found ${matchedEvents.length} matching memories$dateFragment$locationFragment$keywordFragment. '
         'Your average mood was ${avgMood.toStringAsFixed(1)}/5 ($moodLabel). '

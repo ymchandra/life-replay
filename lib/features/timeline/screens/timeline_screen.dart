@@ -68,7 +68,7 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen>
         await ref.read(eventsProvider.notifier).loadEvents();
         if (mounted) {
           final sourceBreakdown = summary.importedBySource.entries
-              .map((e) => '${e.value} ${e.key.label.toLowerCase()}')
+              .map((e) => '${e.value} ${_pluralizeSourceLabel(e.key.label, e.value)}')
               .join(', ');
           showAppToast(
             context,
@@ -132,6 +132,12 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen>
         );
       },
     );
+  }
+
+  String _pluralizeSourceLabel(String label, int count) {
+    if (count == 1) return label.toLowerCase();
+    if (label.endsWith('s')) return label.toLowerCase();
+    return '${label.toLowerCase()}s';
   }
 
   bool _handleScrollNotification(ScrollNotification notification) {
@@ -282,7 +288,7 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen>
             return const EmptyState(
               icon: Iconsax.clock,
               title: 'No memories yet',
-              subtitle: 'Passive import runs in background. Tap + for manual fallback.',
+              subtitle: 'Passive import runs in background. Tap + to add a memory manually.',
             );
           }
 

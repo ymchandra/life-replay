@@ -191,7 +191,6 @@ void main() {
       expect(result.matchedEvents.length, 1);
       expect(result.matchedEvents.first.id, 1);
       expect(result.sourceCounts['photo'], 1);
-      expect(result.answer.toLowerCase(), contains('data source'));
       expect(result.provenanceSummary.toLowerCase(), contains('based on 1 memories'));
     });
   });

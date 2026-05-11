@@ -134,8 +134,8 @@ class DatabaseHelper {
         )
       ''');
       await db.execute(
-        "INSERT INTO event_sources(event_id, source_type, external_id, source_hash, confidence, imported_at, sync_state) "
-        "SELECT id, COALESCE(source_type, 'manual'), source_external_id, source_hash, COALESCE(source_confidence, 1.0), imported_at, COALESCE(sync_state, 'manual') "
+        "INSERT INTO event_sources(event_id, source_type, external_id, source_hash, confidence, imported_at, sync_state, metadata_json) "
+        "SELECT id, COALESCE(source_type, 'manual'), source_external_id, source_hash, COALESCE(source_confidence, 1.0), imported_at, COALESCE(sync_state, 'manual'), '' "
         "FROM life_events",
       );
       await db.execute('CREATE INDEX IF NOT EXISTS idx_events_source_external ON life_events (source_type, source_external_id)');
@@ -342,7 +342,7 @@ class DatabaseHelper {
     final db = await database;
     final externalId = (event.sourceExternalId ?? '').trim();
     final sourceHash = (event.sourceHash ?? '').trim();
-    List<Map<String, Object?>> existing;
+    List<Map<String, Object?>> existing = const [];
     if (externalId.isNotEmpty) {
       existing = await db.query(
         'event_sources',

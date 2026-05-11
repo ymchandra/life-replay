@@ -55,7 +55,7 @@ class PassiveMemorySyncService {
         }
       }
 
-      remaining = maxImportsPerRun - imported;
+      remaining = maxImportsPerRun - (imported + merged);
       await PassiveIngestionSettings.setSeenIds(adapter.sourceType, seenIds);
     }
 
